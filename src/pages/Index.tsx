@@ -15,11 +15,11 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 
 const summaryCards = [
-  { title: 'Impostos', count: 12, icon: Receipt, color: 'text-blue-600' },
-  { title: 'Contábeis', count: 5, icon: PieChart, color: 'text-emerald-600' },
-  { title: 'Legais', count: 2, icon: Scale, color: 'text-amber-600' },
-  { title: 'Folha de Pagamento', count: 24, icon: Users, color: 'text-indigo-600' },
-  { title: 'Operacionais', count: 8, icon: Settings, color: 'text-slate-600' },
+  { title: 'Impostos', count: 12, icon: Receipt, color: 'text-primary' },
+  { title: 'Contábeis', count: 5, icon: PieChart, color: 'text-primary' },
+  { title: 'Legais', count: 2, icon: Scale, color: 'text-muted-foreground' },
+  { title: 'Folha de Pagamento', count: 24, icon: Users, color: 'text-primary' },
+  { title: 'Operacionais', count: 8, icon: Settings, color: 'text-muted-foreground' },
 ]
 
 const recentDocuments = [
@@ -109,22 +109,27 @@ export default function Index() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Bem-vindo de volta, João!</h1>
-        <p className="text-muted-foreground">Aqui está o resumo da sua empresa hoje.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-primary">
+          Bem-vindo de volta, João!
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Portal do Cliente -{' '}
+          <span className="font-medium">COSTA Assessoria & Consultoria Contábil</span>
+        </p>
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {summaryCards.map((card) => (
           <Card
             key={card.title}
-            className="hover:shadow-md transition-all duration-200 bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 border-slate-200/60 dark:border-slate-800"
+            className="hover:shadow-md transition-all duration-200 bg-card border-border"
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
                 {card.title}
               </CardTitle>
               <div
-                className={`p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 ${card.color}`}
+                className={`p-2 rounded-lg bg-muted shadow-sm border border-border ${card.color}`}
               >
                 <card.icon className="h-4 w-4" />
               </div>
@@ -135,7 +140,7 @@ export default function Index() {
               </div>
               <Link
                 to="/documentos"
-                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors mt-1 inline-block"
+                className="text-xs text-primary dark:text-primary hover:text-primary/80 font-medium transition-colors mt-1 inline-block"
               >
                 Ver detalhes &rarr;
               </Link>
@@ -169,8 +174,8 @@ export default function Index() {
                   >
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
-                        <div className="p-1.5 bg-blue-50 dark:bg-blue-950 rounded-md">
-                          <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <div className="p-1.5 bg-primary/10 rounded-md">
+                          <FileText className="h-4 w-4 text-primary" />
                         </div>
                         <span className="text-slate-700 dark:text-slate-300">{doc.name}</span>
                       </div>
@@ -188,7 +193,7 @@ export default function Index() {
                           variant="ghost"
                           size="icon"
                           title="Visualizar"
-                          className="hover:text-blue-600 dark:hover:text-blue-400"
+                          className="hover:text-primary"
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -196,7 +201,7 @@ export default function Index() {
                           variant="ghost"
                           size="icon"
                           title="Baixar"
-                          className="hover:text-blue-600 dark:hover:text-blue-400"
+                          className="hover:text-primary"
                         >
                           <Download className="h-4 w-4" />
                         </Button>

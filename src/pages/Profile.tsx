@@ -58,7 +58,8 @@ export default function Profile() {
               <CardHeader>
                 <CardTitle>Informações Básicas</CardTitle>
                 <CardDescription>
-                  Atualize os dados da sua organização mantidos na contabilidade.
+                  Atualize os dados da sua organização mantidos na COSTA Assessoria & Consultoria
+                  Contábil.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">

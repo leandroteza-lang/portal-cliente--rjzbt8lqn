@@ -25,11 +25,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border py-2">
+      <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border py-2 bg-sidebar">
         <div className="flex items-center gap-3 px-2 w-full">
-          <div className="bg-blue-900 text-white p-1.5 rounded-md shrink-0 shadow-sm">
-            <Briefcase className="h-5 w-5" />
-          </div>
+          <img
+            src="https://img.usecurling.com/i?q=letter%20C%20logo&color=azure&shape=fill"
+            alt="COSTA Logo"
+            className="h-8 w-8 object-contain shrink-0"
+          />
           <div className="flex flex-col overflow-hidden">
             <span className="font-bold text-sm leading-tight tracking-tight truncate text-slate-900 dark:text-slate-100">
               COSTA Assessoria

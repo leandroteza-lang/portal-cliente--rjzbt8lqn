@@ -192,7 +192,12 @@ export default function Documents() {
                         <div className="flex justify-end gap-1 sm:gap-2">
                           <Sheet>
                             <SheetTrigger asChild>
-                              <Button variant="ghost" size="icon" title="Detalhes">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Detalhes"
+                                className="hover:text-primary"
+                              >
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </SheetTrigger>
@@ -236,7 +241,12 @@ export default function Documents() {
                               </div>
                             </SheetContent>
                           </Sheet>
-                          <Button variant="ghost" size="icon" title="Baixar">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Baixar"
+                            className="hover:text-primary"
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>

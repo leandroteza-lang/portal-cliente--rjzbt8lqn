@@ -61,7 +61,7 @@ export default function Upload() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Enviar Documentos</h1>
         <p className="text-muted-foreground">
-          Envie arquivos de forma segura para sua contabilidade.
+          Envie arquivos de forma segura para a COSTA Assessoria & Consultoria Contábil.
         </p>
       </div>
 

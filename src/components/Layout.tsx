@@ -9,11 +9,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 export default function Layout() {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-slate-50 dark:bg-background">
+      <div className="flex min-h-screen w-full bg-muted/30 dark:bg-background">
         <AppSidebar />
         <SidebarInset>
-          <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-white/80 backdrop-blur-md dark:bg-background/80 px-4 shadow-sm md:px-6">
+          <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 shadow-sm md:px-6">
             <SidebarTrigger />
+            <div className="md:hidden flex items-center gap-2 mr-2">
+              <img
+                src="https://img.usecurling.com/i?q=letter%20C%20logo&color=azure&shape=fill"
+                alt="COSTA Logo"
+                className="h-6 w-6 object-contain shrink-0"
+              />
+              <span className="font-bold text-sm tracking-tight text-foreground truncate">
+                COSTA
+              </span>
+            </div>
             <div className="flex-1">
               <form onSubmit={(e) => e.preventDefault()} className="max-w-md">
                 <div className="relative">
