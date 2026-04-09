@@ -15,11 +15,11 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 
 const summaryCards = [
-  { title: 'Impostos', count: 12, icon: Receipt, color: 'text-blue-500' },
-  { title: 'Contábeis', count: 5, icon: PieChart, color: 'text-emerald-500' },
-  { title: 'Legais', count: 2, icon: Scale, color: 'text-amber-500' },
-  { title: 'Folha de Pagamento', count: 24, icon: Users, color: 'text-purple-500' },
-  { title: 'Operacionais', count: 8, icon: Settings, color: 'text-slate-500' },
+  { title: 'Impostos', count: 12, icon: Receipt, color: 'text-blue-600' },
+  { title: 'Contábeis', count: 5, icon: PieChart, color: 'text-emerald-600' },
+  { title: 'Legais', count: 2, icon: Scale, color: 'text-amber-600' },
+  { title: 'Folha de Pagamento', count: 24, icon: Users, color: 'text-indigo-600' },
+  { title: 'Operacionais', count: 8, icon: Settings, color: 'text-slate-600' },
 ]
 
 const recentDocuments = [
@@ -67,8 +67,8 @@ const chartData = [
 ]
 
 const chartConfig = {
-  aprovado: { label: 'Aprovados', color: 'hsl(var(--chart-2))' },
-  pendente: { label: 'Pendentes', color: 'hsl(var(--chart-3))' },
+  aprovado: { label: 'Aprovados', color: 'hsl(var(--primary))' },
+  pendente: { label: 'Pendentes', color: 'hsl(var(--chart-2))' },
   arquivado: { label: 'Arquivados', color: 'hsl(var(--muted-foreground))' },
   value: { label: 'Quantidade' },
 }
@@ -77,19 +77,28 @@ const getStatusBadge = (status: string) => {
   switch (status) {
     case 'Aprovado':
       return (
-        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+        <Badge
+          variant="outline"
+          className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800 font-medium"
+        >
           Aprovado
         </Badge>
       )
     case 'Pendente':
       return (
-        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+        <Badge
+          variant="outline"
+          className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-800 font-medium"
+        >
           Pendente
         </Badge>
       )
     default:
       return (
-        <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200">
+        <Badge
+          variant="outline"
+          className="bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 font-medium"
+        >
           {status}
         </Badge>
       )
@@ -106,20 +115,29 @@ export default function Index() {
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {summaryCards.map((card) => (
-          <Card key={card.title} className="hover:shadow-md transition-shadow">
+          <Card
+            key={card.title}
+            className="hover:shadow-md transition-all duration-200 bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 border-slate-200/60 dark:border-slate-800"
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
                 {card.title}
               </CardTitle>
-              <card.icon className={`h-4 w-4 ${card.color}`} />
+              <div
+                className={`p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 ${card.color}`}
+              >
+                <card.icon className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{card.count}</div>
+              <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                {card.count}
+              </div>
               <Link
                 to="/documentos"
-                className="text-xs text-primary hover:underline mt-1 inline-block"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors mt-1 inline-block"
               >
-                Ver todos
+                Ver detalhes &rarr;
               </Link>
             </CardContent>
           </Card>
@@ -136,7 +154,7 @@ export default function Index() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome do Documento</TableHead>
+                  <TableHead>Nome do Arquivo</TableHead>
                   <TableHead className="hidden md:table-cell">Categoria</TableHead>
                   <TableHead className="hidden md:table-cell">Data</TableHead>
                   <TableHead>Status</TableHead>
@@ -145,26 +163,41 @@ export default function Index() {
               </TableHeader>
               <TableBody>
                 {recentDocuments.map((doc) => (
-                  <TableRow key={doc.id}>
+                  <TableRow
+                    key={doc.id}
+                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
+                  >
                     <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        {doc.name}
+                      <div className="flex items-center gap-3">
+                        <div className="p-1.5 bg-blue-50 dark:bg-blue-950 rounded-md">
+                          <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <span className="text-slate-700 dark:text-slate-300">{doc.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-muted-foreground">
+                    <TableCell className="hidden md:table-cell text-slate-500">
                       {doc.category}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-muted-foreground">
+                    <TableCell className="hidden md:table-cell text-slate-500">
                       {doc.date}
                     </TableCell>
                     <TableCell>{getStatusBadge(doc.status)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" title="Visualizar">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Visualizar"
+                          className="hover:text-blue-600 dark:hover:text-blue-400"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" title="Baixar">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Baixar"
+                          className="hover:text-blue-600 dark:hover:text-blue-400"
+                        >
                           <Download className="h-4 w-4" />
                         </Button>
                       </div>

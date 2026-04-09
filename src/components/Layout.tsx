@@ -9,10 +9,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 export default function Layout() {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-slate-50/50 dark:bg-background">
+      <div className="flex min-h-screen w-full bg-slate-50 dark:bg-background">
         <AppSidebar />
         <SidebarInset>
-          <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 shadow-sm md:px-6">
+          <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-white/80 backdrop-blur-md dark:bg-background/80 px-4 shadow-sm md:px-6">
             <SidebarTrigger />
             <div className="flex-1">
               <form onSubmit={(e) => e.preventDefault()} className="max-w-md">
