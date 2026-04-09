@@ -5,11 +5,21 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import Layout from './components/Layout'
 import Index from './pages/Index'
 import Documents from './pages/Documents'
-import CalendarPage from './pages/CalendarPage'
-import Upload from './pages/Upload'
-import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
 import NotFound from './pages/NotFound'
+
+const Placeholder = ({ title }: { title: string }) => (
+  <div className="flex flex-col items-center justify-center h-[50vh] text-center max-w-md mx-auto">
+    <div className="w-16 h-16 bg-primary/10 text-primary flex items-center justify-center rounded-2xl mb-6">
+      <span className="text-2xl font-bold">{title.charAt(0)}</span>
+    </div>
+    <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-3">{title}</h1>
+    <p className="text-slate-500 font-medium leading-relaxed">
+      Esta seção do portal está sendo preparada e estará disponível em breve com novas
+      funcionalidades.
+    </p>
+  </div>
+)
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -20,9 +30,9 @@ const App = () => (
         <Route element={<Layout />}>
           <Route path="/" element={<Index />} />
           <Route path="/documentos" element={<Documents />} />
-          <Route path="/calendario" element={<CalendarPage />} />
-          <Route path="/enviar" element={<Upload />} />
-          <Route path="/notificacoes" element={<Notifications />} />
+          <Route path="/impostos" element={<Placeholder title="Meus Impostos" />} />
+          <Route path="/faturas" element={<Placeholder title="Faturas e Boletos" />} />
+          <Route path="/mensagens" element={<Placeholder title="Central de Mensagens" />} />
           <Route path="/perfil" element={<Profile />} />
         </Route>
         <Route path="*" element={<NotFound />} />
