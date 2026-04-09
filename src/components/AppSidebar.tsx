@@ -9,7 +9,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar'
+import logoCosta from '@/assets/design-sem-nome-1-editado-6f8ca.png'
 
 const navItems = [
   { title: 'Início', url: '/', icon: Home },
@@ -22,24 +24,19 @@ const navItems = [
 
 export function AppSidebar() {
   const location = useLocation()
+  const { state } = useSidebar()
 
   return (
     <Sidebar>
-      <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border py-2 bg-sidebar">
-        <div className="flex items-center gap-3 px-2 w-full">
+      <SidebarHeader className="h-24 flex items-center justify-center border-b border-sidebar-border py-4 bg-sidebar">
+        <div className="flex items-center justify-center px-2 w-full h-full">
           <img
-            src="https://img.usecurling.com/i?q=letter%20C%20logo&color=azure&shape=fill"
-            alt="COSTA Logo"
-            className="h-8 w-8 object-contain shrink-0"
+            src={logoCosta}
+            alt="COSTA Assessoria & Consultoria Contábil"
+            className={`object-contain transition-all duration-300 ease-in-out ${
+              state === 'collapsed' ? 'w-full h-8' : 'w-full h-full'
+            }`}
           />
-          <div className="flex flex-col overflow-hidden">
-            <span className="font-bold text-sm leading-tight tracking-tight truncate text-slate-900 dark:text-slate-100">
-              COSTA Assessoria
-            </span>
-            <span className="text-[10px] uppercase tracking-wider text-slate-500 truncate dark:text-slate-400">
-              & Consultoria Contábil
-            </span>
-          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>

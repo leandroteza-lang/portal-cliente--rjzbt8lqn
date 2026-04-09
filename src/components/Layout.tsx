@@ -5,6 +5,7 @@ import { AppSidebar } from '@/components/AppSidebar'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import logoCosta from '@/assets/design-sem-nome-1-editado-6f8ca.png'
 
 export default function Layout() {
   return (
@@ -16,13 +17,10 @@ export default function Layout() {
             <SidebarTrigger />
             <div className="md:hidden flex items-center gap-2 mr-2">
               <img
-                src="https://img.usecurling.com/i?q=letter%20C%20logo&color=azure&shape=fill"
-                alt="COSTA Logo"
-                className="h-6 w-6 object-contain shrink-0"
+                src={logoCosta}
+                alt="COSTA Assessoria"
+                className="h-8 w-auto max-w-[120px] object-contain shrink-0"
               />
-              <span className="font-bold text-sm tracking-tight text-foreground truncate">
-                COSTA
-              </span>
             </div>
             <div className="flex-1">
               <form onSubmit={(e) => e.preventDefault()} className="max-w-md">
