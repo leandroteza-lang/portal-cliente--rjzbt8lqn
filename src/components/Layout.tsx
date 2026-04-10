@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { Search, Bell } from 'lucide-react'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
@@ -13,6 +13,7 @@ import { supabase } from '@/lib/supabase/client'
 export default function Layout() {
   const { session } = useAuth()
   const [cliente, setCliente] = useState<any>(null)
+  const location = useLocation()
 
   useEffect(() => {
     async function fetchCliente() {
@@ -93,8 +94,11 @@ export default function Layout() {
             </div>
           </header>
 
-          <main className="flex-1 p-4 md:p-8 lg:p-10 animate-fade-in-up overflow-x-hidden">
-            <div className="mx-auto max-w-7xl">
+          <main className="flex-1 p-4 md:p-8 lg:p-10 overflow-x-hidden">
+            <div
+              key={location.pathname}
+              className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
+            >
               <Outlet />
             </div>
           </main>

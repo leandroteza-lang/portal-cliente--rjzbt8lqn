@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AdminSidebar } from './AdminSidebar'
 import { useAuth } from '@/hooks/use-auth'
@@ -7,6 +7,7 @@ import { User } from 'lucide-react'
 export default function AdminLayout() {
   const { session } = useAuth()
   const userName = session?.user?.user_metadata?.full_name || 'Contador'
+  const location = useLocation()
 
   return (
     <SidebarProvider>
@@ -28,7 +29,10 @@ export default function AdminLayout() {
             </div>
           </header>
           <main className="flex-1 overflow-auto p-6 md:p-8">
-            <div className="mx-auto max-w-7xl w-full h-full">
+            <div
+              key={location.pathname}
+              className="mx-auto max-w-7xl w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
+            >
               <Outlet />
             </div>
           </main>

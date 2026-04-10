@@ -24,7 +24,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 
 const Placeholder = ({ title }: { title: string }) => (
-  <div className="flex flex-col items-center justify-center h-[50vh] text-center max-w-md mx-auto animate-fade-in-up">
+  <div className="flex flex-col items-center justify-center h-[50vh] text-center max-w-md mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
     <div className="w-16 h-16 bg-primary/10 text-primary flex items-center justify-center rounded-2xl mb-6 shadow-sm">
       <span className="text-2xl font-bold">{title.charAt(0)}</span>
     </div>
