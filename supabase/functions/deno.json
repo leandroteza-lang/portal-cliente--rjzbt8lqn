@@ -1,0 +1,6 @@
+{
+  "_versions": {
+    "send-email": 1,
+    "send-whatsapp": 1
+  }
+}
