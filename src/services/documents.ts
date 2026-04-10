@@ -2,12 +2,11 @@ import { supabase } from '@/lib/supabase/client'
 
 export interface Document {
   id: string
-  name: string
-  category: string
-  status: string
-  file_url: string
-  size: string
-  created_at: string
+  nome: string
+  categoria: string
+  status: string | null
+  arquivo_url: string | null
+  data_upload: string | null
 }
 
 export async function fetchDocuments(
@@ -16,32 +15,32 @@ export async function fetchDocuments(
   search: string,
   category: string,
 ) {
-  let query = supabase.from('documents').select('*', { count: 'exact' })
+  let query = supabase.from('documentos').select('*', { count: 'exact' })
 
   if (search) {
-    query = query.ilike('name', `%${search}%`)
+    query = query.ilike('nome', `%${search}%`)
   }
 
   if (category && category !== 'todas') {
-    query = query.eq('category', category)
+    query = query.eq('categoria', category)
   }
 
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
-  query = query.range(from, to).order('created_at', { ascending: false })
+  query = query.range(from, to).order('data_upload', { ascending: false })
 
   const { data, error, count } = await query
 
   if (error) throw error
 
   return {
-    data: data as Document[],
+    data: (data || []) as Document[],
     count: count || 0,
   }
 }
 
 export async function deleteDocument(id: string) {
-  const { error } = await supabase.from('documents').delete().eq('id', id)
+  const { error } = await supabase.from('documentos').delete().eq('id', id)
   if (error) throw error
 }

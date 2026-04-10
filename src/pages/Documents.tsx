@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { fetchDocuments, deleteDocument, type Document } from '@/services/documents'
 
 export default function Documents() {
@@ -44,6 +45,7 @@ export default function Documents() {
   const [categoryFilter, setCategoryFilter] = useState('todas')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
+  const [viewingDoc, setViewingDoc] = useState<Document | null>(null)
   const pageSize = 10
 
   useEffect(() => {
@@ -73,6 +75,20 @@ export default function Documents() {
     } catch (error) {
       toast.error('Erro ao excluir documento')
     }
+  }
+
+  const handleDownload = (doc: Document) => {
+    if (!doc.arquivo_url) {
+      toast.error('URL do arquivo não disponível')
+      return
+    }
+    const link = document.createElement('a')
+    link.href = doc.arquivo_url
+    link.download = doc.nome
+    link.target = '_blank'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   const totalPages = Math.ceil(total / pageSize)
@@ -187,38 +203,40 @@ export default function Documents() {
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
                           <div className="p-2.5 bg-primary/10 rounded-lg shrink-0 text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-                            {getCategoryIcon(doc.category)}
+                            {getCategoryIcon(doc.categoria)}
                           </div>
                           <div>
                             <span className="truncate max-w-[150px] sm:max-w-[300px] block font-semibold text-slate-700 dark:text-slate-200">
-                              {doc.name}
+                              {doc.nome}
                             </span>
                             <span className="text-xs text-muted-foreground font-normal mt-0.5 block md:hidden">
-                              {doc.category}
+                              {doc.categoria}
                             </span>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <span className="text-slate-600 dark:text-slate-400 font-medium">
-                          {doc.category}
+                          {doc.categoria}
                         </span>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
-                        {format(new Date(doc.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                        {doc.data_upload
+                          ? format(new Date(doc.data_upload), 'dd/MM/yyyy', { locale: ptBR })
+                          : '-'}
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
                           className={
-                            doc.status === 'Aprovado'
+                            doc.status === 'Concluído' || doc.status === 'Aprovado'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50'
-                              : doc.status === 'Pendente'
+                              : doc.status === 'Processando' || doc.status === 'Pendente'
                                 ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/50'
-                                : 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700/50'
+                                : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50'
                           }
                         >
-                          {doc.status}
+                          {doc.status || 'Processando'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -228,22 +246,18 @@ export default function Documents() {
                             size="icon"
                             title="Visualizar"
                             className="hover:text-primary hover:bg-primary/10"
-                            asChild
+                            onClick={() => setViewingDoc(doc)}
                           >
-                            <a href={doc.file_url || '#'} target="_blank" rel="noreferrer">
-                              <Eye className="h-4 w-4" />
-                            </a>
+                            <Eye className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             title="Baixar"
                             className="hover:text-primary hover:bg-primary/10"
-                            asChild
+                            onClick={() => handleDownload(doc)}
                           >
-                            <a href={doc.file_url || '#'} download>
-                              <Download className="h-4 w-4" />
-                            </a>
+                            <Download className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -308,6 +322,31 @@ export default function Documents() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!viewingDoc} onOpenChange={(open) => !open && setViewingDoc(null)}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              {viewingDoc?.nome}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 bg-slate-100/50 dark:bg-slate-950 relative">
+            {viewingDoc?.arquivo_url ? (
+              <iframe
+                src={viewingDoc.arquivo_url}
+                className="absolute inset-0 w-full h-full border-0"
+                title={viewingDoc.nome}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground flex-col gap-2">
+                <FileText className="h-10 w-10 text-slate-300 dark:text-slate-700" />
+                <p>O arquivo não está disponível para visualização.</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
