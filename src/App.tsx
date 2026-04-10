@@ -18,6 +18,7 @@ import AdminClientes from './pages/admin/AdminClientes'
 import AdminDocumentos from './pages/admin/AdminDocumentos'
 import AdminVencimentos from './pages/admin/AdminVencimentos'
 import AdminNotificacoes from './pages/admin/AdminNotificacoes'
+import AdminConfiguracoes from './pages/admin/AdminConfiguracoes'
 import { AuthProvider, useAuth } from './hooks/use-auth'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
@@ -120,7 +121,7 @@ const AppRoutes = () => (
       <Route path="documentos" element={<AdminDocumentos />} />
       <Route path="vencimentos" element={<AdminVencimentos />} />
       <Route path="notificacoes" element={<AdminNotificacoes />} />
-      <Route path="configuracoes" element={<Placeholder title="Configurações do Painel" />} />
+      <Route path="configuracoes" element={<AdminConfiguracoes />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
