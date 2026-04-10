@@ -7,10 +7,13 @@ import {
   MessageSquare,
   User,
   UploadCloud,
+  LogOut,
 } from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -34,6 +37,7 @@ const navItems = [
 export function AppSidebar() {
   const location = useLocation()
   const { state } = useSidebar()
+  const { signOut } = useAuth()
 
   return (
     <Sidebar className="border-r border-white/30 bg-white/80 backdrop-blur-xl dark:bg-slate-900/80 shadow-elevation">
@@ -78,6 +82,20 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="p-4 bg-transparent border-t border-slate-200/50 dark:border-slate-800/50">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => signOut()}
+              tooltip="Sair"
+              className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/30 transition-colors rounded-xl h-12"
+            >
+              <LogOut className="h-5 w-5" />
+              <span className="font-medium text-[15px]">Sair do Sistema</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   )
 }

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FileText,
@@ -6,7 +7,10 @@ import {
   Calendar as CalendarIcon,
   AlertCircle,
   ChevronRight,
+  Building2,
 } from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
+import { supabase } from '@/lib/supabase/client'
 import {
   Card,
   CardContent,
@@ -60,8 +64,53 @@ const recentDocuments = [
 ]
 
 export default function Index() {
+  const { session } = useAuth()
+  const [cliente, setCliente] = useState<any>(null)
+
+  useEffect(() => {
+    async function fetchCliente() {
+      if (session?.user?.id) {
+        const { data } = await supabase
+          .from('clientes')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+
+        if (data) setCliente(data)
+      }
+    }
+    fetchCliente()
+  }, [session])
+
   return (
     <div className="space-y-8 pb-8">
+      {/* Boas-vindas e Dados do Cliente */}
+      {cliente && (
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between animate-fade-in-up bg-white/60 dark:bg-slate-900/60 p-6 rounded-2xl border border-white/60 dark:border-slate-800 shadow-sm backdrop-blur-md">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+              Olá, {cliente.nome || 'Cliente'}! 👋
+            </h1>
+            <p className="text-slate-500 font-medium mt-1">
+              Bem-vindo ao seu painel contábil. Aqui está o resumo das suas operações.
+            </p>
+          </div>
+          <div className="flex items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <div className="p-3 bg-primary/10 text-primary rounded-lg hidden sm:block">
+              <Building2 className="h-6 w-6" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                {cliente.razao_social || 'Razão Social não informada'}
+              </span>
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                CNPJ: {cliente.cnpj || 'Não informado'}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Cards de Resumo */}
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         <Card className="rounded-2xl shadow-elevation border-white/60 bg-white/95 backdrop-blur-md dark:bg-slate-900/95 dark:border-slate-800 transition-all hover:-translate-y-1 hover:shadow-xl duration-300">
