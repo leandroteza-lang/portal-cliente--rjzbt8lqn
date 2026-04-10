@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { Search, Bell } from 'lucide-react'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/AppSidebar'
@@ -6,8 +7,28 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import logoCosta from '@/assets/design-sem-nome-1-editado-6f8ca.png'
+import { useAuth } from '@/hooks/use-auth'
+import { supabase } from '@/lib/supabase/client'
 
 export default function Layout() {
+  const { session } = useAuth()
+  const [cliente, setCliente] = useState<any>(null)
+
+  useEffect(() => {
+    async function fetchCliente() {
+      if (session?.user?.id) {
+        const { data } = await supabase
+          .from('clientes')
+          .select('nome')
+          .eq('id', session.user.id)
+          .single()
+
+        if (data) setCliente(data)
+      }
+    }
+    fetchCliente()
+  }, [session])
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full relative z-0">
@@ -30,7 +51,9 @@ export default function Layout() {
             </div>
 
             <div className="hidden md:flex flex-col justify-center shrink-0">
-              <h1 className="text-2xl font-bold text-primary tracking-tight">Bem-vindo, João!</h1>
+              <h1 className="text-2xl font-bold text-primary tracking-tight">
+                Bem-vindo, {cliente?.nome ? cliente.nome.split(' ')[0] : 'Cliente'}!
+              </h1>
               <p className="text-sm text-slate-500 font-medium">Portal do Cliente COSTA</p>
             </div>
 
@@ -60,8 +83,12 @@ export default function Layout() {
                 <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-secondary rounded-full border-2 border-white"></span>
               </Button>
               <Avatar className="h-12 w-12 border-2 border-white shadow-sm cursor-pointer hover:opacity-90 transition-opacity">
-                <AvatarImage src="https://img.usecurling.com/ppl/thumbnail?gender=male&seed=42" />
-                <AvatarFallback className="bg-primary text-white font-medium">JO</AvatarFallback>
+                <AvatarImage
+                  src={`https://img.usecurling.com/ppl/thumbnail?gender=male&seed=${session?.user?.id || '42'}`}
+                />
+                <AvatarFallback className="bg-primary text-white font-medium">
+                  {cliente?.nome ? cliente.nome.substring(0, 2).toUpperCase() : 'CL'}
+                </AvatarFallback>
               </Avatar>
             </div>
           </header>

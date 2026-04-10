@@ -8,6 +8,10 @@ import {
   AlertCircle,
   ChevronRight,
   Building2,
+  Files,
+  Calculator,
+  Scale,
+  Users,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { supabase } from '@/lib/supabase/client'
@@ -66,21 +70,44 @@ const recentDocuments = [
 export default function Index() {
   const { session } = useAuth()
   const [cliente, setCliente] = useState<any>(null)
+  const [documentos, setDocumentos] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchCliente() {
+    async function fetchData() {
       if (session?.user?.id) {
-        const { data } = await supabase
-          .from('clientes')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
+        const [clienteRes, docsRes] = await Promise.all([
+          supabase.from('clientes').select('*').eq('id', session.user.id).single(),
+          supabase
+            .from('documentos')
+            .select('*')
+            .eq('cliente_id', session.user.id)
+            .order('data_upload', { ascending: false }),
+        ])
 
-        if (data) setCliente(data)
+        if (clienteRes.data) setCliente(clienteRes.data)
+        if (docsRes.data) setDocumentos(docsRes.data)
+        setLoading(false)
       }
     }
-    fetchCliente()
+    fetchData()
   }, [session])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  const totalDocs = documentos.length
+  const docsFiscais = documentos.filter((d) => d.categoria === 'Impostos').length
+  const docsContabeis = documentos.filter((d) => d.categoria === 'Contábeis').length
+  const docsLegais = documentos.filter((d) => d.categoria === 'Legais').length
+  const docsFolha = documentos.filter((d) => d.categoria === 'Folha de Pagamento').length
+
+  const docsRecentes = documentos.slice(0, 5)
 
   return (
     <div className="space-y-8 pb-8">
@@ -112,71 +139,85 @@ export default function Index() {
       )}
 
       {/* Cards de Resumo */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         <Card className="rounded-2xl shadow-elevation border-white/60 bg-white/95 backdrop-blur-md dark:bg-slate-900/95 dark:border-slate-800 transition-all hover:-translate-y-1 hover:shadow-xl duration-300">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">
-              Documentos Pendentes
+            <CardTitle className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">
+              Total
             </CardTitle>
-            <div className="p-2.5 bg-orange-100 text-orange-600 rounded-xl">
-              <AlertCircle className="h-4 w-4" />
+            <div className="p-2 bg-primary/10 text-primary rounded-xl">
+              <Files className="h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">3</div>
-            <p className="text-sm text-slate-500 mt-1 font-medium">Requerem sua atenção</p>
+            <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">{totalDocs}</div>
+            <p className="text-xs text-slate-500 mt-1 font-medium">Documentos</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-2xl shadow-elevation border-white/60 bg-white/95 backdrop-blur-md dark:bg-slate-900/95 dark:border-slate-800 transition-all hover:-translate-y-1 hover:shadow-xl duration-300">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">
-              Próximo Vencimento
+            <CardTitle className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">
+              Fiscais
             </CardTitle>
-            <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
-              <CalendarIcon className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">20/10</div>
-            <p
-              className="text-sm text-slate-500 mt-1 font-medium truncate"
-              title="DAS - Simples Nacional"
-            >
-              DAS - Simples Nacional
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl shadow-elevation border-white/60 bg-white/95 backdrop-blur-md dark:bg-slate-900/95 dark:border-slate-800 transition-all hover:-translate-y-1 hover:shadow-xl duration-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">
-              Faturamento (Mês)
-            </CardTitle>
-            <div className="p-2.5 bg-secondary/10 text-secondary rounded-xl">
-              <TrendingUp className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">R$ 65k</div>
-            <p className="text-sm text-emerald-600 flex items-center mt-1 font-medium">
-              <TrendingUp className="h-3.5 w-3.5 mr-1" /> +10.2% em relação a Mai
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl shadow-elevation border-white/60 bg-white/95 backdrop-blur-md dark:bg-slate-900/95 dark:border-slate-800 transition-all hover:-translate-y-1 hover:shadow-xl duration-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">
-              Impostos Pagos
-            </CardTitle>
-            <div className="p-2.5 bg-emerald-100 text-emerald-600 rounded-xl">
+            <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl">
               <FileText className="h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">100%</div>
-            <p className="text-sm text-slate-500 mt-1 font-medium">Tudo em dia neste mês</p>
+            <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+              {docsFiscais}
+            </div>
+            <p className="text-xs text-slate-500 mt-1 font-medium">Impostos</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl shadow-elevation border-white/60 bg-white/95 backdrop-blur-md dark:bg-slate-900/95 dark:border-slate-800 transition-all hover:-translate-y-1 hover:shadow-xl duration-300">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">
+              Contábeis
+            </CardTitle>
+            <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
+              <Calculator className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+              {docsContabeis}
+            </div>
+            <p className="text-xs text-slate-500 mt-1 font-medium">Balanços e DREs</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl shadow-elevation border-white/60 bg-white/95 backdrop-blur-md dark:bg-slate-900/95 dark:border-slate-800 transition-all hover:-translate-y-1 hover:shadow-xl duration-300">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">
+              Legais
+            </CardTitle>
+            <div className="p-2 bg-amber-100 text-amber-600 rounded-xl">
+              <Scale className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+              {docsLegais}
+            </div>
+            <p className="text-xs text-slate-500 mt-1 font-medium">Contratos e Atos</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl shadow-elevation border-white/60 bg-white/95 backdrop-blur-md dark:bg-slate-900/95 dark:border-slate-800 transition-all hover:-translate-y-1 hover:shadow-xl duration-300">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">
+              Folha
+            </CardTitle>
+            <div className="p-2 bg-purple-100 text-purple-600 rounded-xl">
+              <Users className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">{docsFolha}</div>
+            <p className="text-xs text-slate-500 mt-1 font-medium">RH e Pagamento</p>
           </CardContent>
         </Card>
       </div>
@@ -313,55 +354,74 @@ export default function Index() {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3">
-            {recentDocuments.map((doc) => (
-              <div
-                key={doc.id}
-                className="flex items-center justify-between p-4 rounded-xl border border-slate-200/60 bg-white shadow-sm hover:border-slate-300 hover:shadow-md transition-all dark:bg-slate-800/80 dark:border-slate-700 group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3.5 bg-rose-50 text-rose-600 rounded-xl group-hover:bg-rose-100 transition-colors">
-                    <FileText className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-[15px]">
-                      {doc.title}
-                    </h4>
-                    <p className="text-[13px] text-slate-500 font-semibold flex items-center gap-2.5 mt-1">
-                      <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">
-                        {doc.type}
-                      </span>
-                      <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                      <span>{doc.size}</span>
-                      <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                      <span>{doc.date}</span>
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  className="text-slate-600 hover:text-primary hover:bg-primary/5 hover:border-primary/30 rounded-full font-semibold gap-2 hidden md:flex"
-                >
-                  <Download className="h-4 w-4" />
-                  Download
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-slate-400 hover:text-primary hover:bg-primary/10 rounded-full h-10 w-10 md:hidden"
-                >
-                  <Download className="h-5 w-5" />
-                </Button>
+          {docsRecentes.length === 0 ? (
+            <div className="text-center py-10">
+              <div className="mx-auto w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-3">
+                <FileText className="h-6 w-6 text-slate-400" />
               </div>
-            ))}
-          </div>
-          <Button
-            variant="outline"
-            className="w-full mt-4 sm:hidden font-semibold rounded-xl"
-            asChild
-          >
-            <Link to="/documentos">Acessar Pasta de Documentos</Link>
-          </Button>
+              <p className="text-slate-500 font-medium">Nenhum documento enviado ainda</p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {docsRecentes.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex items-center justify-between p-4 rounded-xl border border-slate-200/60 bg-white shadow-sm hover:border-slate-300 hover:shadow-md transition-all dark:bg-slate-800/80 dark:border-slate-700 group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3.5 bg-rose-50 text-rose-600 rounded-xl group-hover:bg-rose-100 transition-colors">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-800 dark:text-slate-200 text-[15px]">
+                        {doc.nome}
+                      </h4>
+                      <p className="text-[13px] text-slate-500 font-semibold flex items-center gap-2.5 mt-1">
+                        <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">
+                          {doc.categoria}
+                        </span>
+                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                        <span>
+                          {doc.data_upload
+                            ? new Date(doc.data_upload).toLocaleDateString('pt-BR')
+                            : 'Data indisponível'}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="text-slate-600 hover:text-primary hover:bg-primary/5 hover:border-primary/30 rounded-full font-semibold gap-2 hidden md:flex"
+                    onClick={() => {
+                      if (doc.arquivo_url) window.open(doc.arquivo_url, '_blank')
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-slate-400 hover:text-primary hover:bg-primary/10 rounded-full h-10 w-10 md:hidden"
+                    onClick={() => {
+                      if (doc.arquivo_url) window.open(doc.arquivo_url, '_blank')
+                    }}
+                  >
+                    <Download className="h-5 w-5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          {docsRecentes.length > 0 && (
+            <Button
+              variant="outline"
+              className="w-full mt-4 sm:hidden font-semibold rounded-xl"
+              asChild
+            >
+              <Link to="/documentos">Acessar Pasta de Documentos</Link>
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>
