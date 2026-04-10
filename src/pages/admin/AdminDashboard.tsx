@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, FileText, Clock, CalendarAlert } from 'lucide-react'
+import { Users, FileText, Clock, CalendarClock } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function AdminDashboard() {
@@ -81,7 +81,7 @@ export default function AdminDashboard() {
         <MetricCard
           title="Vencimentos (7 dias)"
           value={metrics.proximosVencimentos}
-          icon={<CalendarAlert className="h-5 w-5 text-rose-600" />}
+          icon={<CalendarClock className="h-5 w-5 text-rose-600" />}
           loading={loading}
           bgIcon="bg-rose-100"
         />
