@@ -9,6 +9,7 @@ import Upload from './pages/Upload'
 import Profile from './pages/Profile'
 import Taxes from './pages/Taxes'
 import Invoices from './pages/Invoices'
+import Notifications from './pages/Notifications'
 import NotFound from './pages/NotFound'
 import Login from './pages/Login'
 import { AuthProvider, useAuth } from './hooks/use-auth'
@@ -51,7 +52,7 @@ const AppRoutes = () => (
       <Route path="/upload" element={<Upload />} />
       <Route path="/impostos" element={<Taxes />} />
       <Route path="/faturas" element={<Invoices />} />
-      <Route path="/mensagens" element={<Placeholder title="Central de Mensagens" />} />
+      <Route path="/notificacoes" element={<Notifications />} />
       <Route path="/perfil" element={<Profile />} />
     </Route>
     <Route path="*" element={<NotFound />} />

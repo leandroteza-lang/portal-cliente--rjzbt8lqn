@@ -4,12 +4,13 @@ import {
   FileText,
   Landmark,
   Receipt,
-  MessageSquare,
+  Bell,
   User,
   UploadCloud,
   LogOut,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
+import { useNotificationsCount } from '@/hooks/use-notifications-count'
 import {
   Sidebar,
   SidebarContent,
@@ -30,7 +31,7 @@ const navItems = [
   { title: 'Novo Documento', url: '/upload', icon: UploadCloud },
   { title: 'Impostos', url: '/impostos', icon: Landmark },
   { title: 'Faturas', url: '/faturas', icon: Receipt },
-  { title: 'Mensagens', url: '/mensagens', icon: MessageSquare },
+  { title: 'Notificações', url: '/notificacoes', icon: Bell },
   { title: 'Perfil', url: '/perfil', icon: User },
 ]
 
@@ -38,6 +39,7 @@ export function AppSidebar() {
   const location = useLocation()
   const { state } = useSidebar()
   const { signOut } = useAuth()
+  const unreadCount = useNotificationsCount()
 
   return (
     <Sidebar className="border-r border-white/30 bg-white/80 backdrop-blur-xl dark:bg-slate-900/80 shadow-elevation">
@@ -70,9 +72,20 @@ export function AppSidebar() {
                           : 'text-slate-600 hover:bg-slate-100 hover:text-primary dark:text-slate-400 dark:hover:bg-slate-800'
                       }`}
                     >
-                      <Link to={item.url} className="flex items-center gap-3 px-4">
-                        <item.icon className={`h-5 w-5 ${isActive ? 'text-secondary' : ''}`} />
-                        <span className="font-medium text-[15px]">{item.title}</span>
+                      <Link to={item.url} className="flex items-center justify-between px-4 w-full">
+                        <div className="flex items-center gap-3">
+                          <item.icon
+                            className={`h-5 w-5 shrink-0 ${isActive ? 'text-secondary' : ''}`}
+                          />
+                          <span className="font-medium text-[15px]">{item.title}</span>
+                        </div>
+                        {item.title === 'Notificações' && unreadCount > 0 && (
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center ${isActive ? 'bg-secondary text-secondary-foreground' : 'bg-primary text-primary-foreground'}`}
+                          >
+                            {unreadCount}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
