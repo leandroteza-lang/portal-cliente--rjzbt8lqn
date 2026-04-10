@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, FileText, Clock, CalendarClock } from 'lucide-react'
+import { Users, FileText, Clock, CalendarClock, CheckCircle } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function AdminDashboard() {
@@ -88,20 +88,38 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 mt-8">
-        <Card className="border-slate-200 shadow-sm bg-white">
-          <CardHeader>
-            <CardTitle className="text-lg text-slate-800">Últimos Documentos</CardTitle>
+        <Card className="border-slate-200 shadow-sm bg-white overflow-hidden group">
+          <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+            <CardTitle className="text-lg text-slate-800 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-[#3B82F6] transition-transform group-hover:scale-110" />
+              Últimos Documentos
+            </CardTitle>
           </CardHeader>
-          <CardContent className="h-64 flex items-center justify-center border-t border-dashed border-slate-200 m-4 rounded-lg bg-slate-50">
-            <p className="text-slate-400 font-medium">Nenhum documento recente</p>
+          <CardContent className="h-64 flex flex-col items-center justify-center m-4">
+            <div className="relative w-20 h-20 mb-4 animate-fade-in-up">
+              <div className="absolute inset-0 bg-[#3B82F6]/10 rounded-full" />
+              <FileText className="absolute inset-0 m-auto w-10 h-10 text-[#3B82F6] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" />
+            </div>
+            <p className="text-slate-600 font-medium text-center">
+              Nenhum documento processado recentemente.
+            </p>
           </CardContent>
         </Card>
-        <Card className="border-slate-200 shadow-sm bg-white">
-          <CardHeader>
-            <CardTitle className="text-lg text-slate-800">Vencimentos Próximos</CardTitle>
+        <Card className="border-slate-200 shadow-sm bg-white overflow-hidden group">
+          <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+            <CardTitle className="text-lg text-slate-800 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-[#F59E0B] transition-transform group-hover:scale-110" />
+              Vencimentos Próximos
+            </CardTitle>
           </CardHeader>
-          <CardContent className="h-64 flex items-center justify-center border-t border-dashed border-slate-200 m-4 rounded-lg bg-slate-50">
-            <p className="text-slate-400 font-medium">Nenhum vencimento para esta semana</p>
+          <CardContent className="h-64 flex flex-col items-center justify-center m-4">
+            <div className="relative w-20 h-20 mb-4 animate-fade-in-up">
+              <div className="absolute inset-0 bg-[#10B981]/10 rounded-full" />
+              <CheckCircle className="absolute inset-0 m-auto w-10 h-10 text-[#10B981] transition-transform duration-500 group-hover:scale-110" />
+            </div>
+            <p className="text-slate-600 font-medium text-center">
+              Tudo em dia! Nenhum vencimento crítico para esta semana.
+            </p>
           </CardContent>
         </Card>
       </div>

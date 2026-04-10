@@ -213,18 +213,21 @@ export default function Upload() {
                 <div className="space-y-2">
                   <Label>Arquivos *</Label>
                   <div
-                    className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg border-muted-foreground/25 bg-muted/10 hover:bg-muted/30 transition-colors cursor-pointer relative"
+                    className="group flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg border-slate-200 dark:border-slate-800 bg-slate-50/50 hover:bg-[#3B82F6]/5 hover:border-[#3B82F6]/50 transition-colors cursor-pointer relative"
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={handleDrop}
                   >
                     <input
                       type="file"
                       multiple
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       onChange={handleFileChange}
                       accept=".xml,.pdf,.zip,.csv,.xlsx,.jpg,.jpeg,.png"
                     />
-                    <UploadCloud className="h-10 w-10 text-muted-foreground mb-4" />
+                    <div className="relative w-16 h-16 mb-4 group-hover:-translate-y-2 transition-transform duration-300">
+                      <div className="absolute inset-0 bg-[#3B82F6]/10 rounded-full" />
+                      <UploadCloud className="absolute inset-0 m-auto h-8 w-8 text-[#3B82F6] group-hover:scale-110 transition-transform duration-300" />
+                    </div>
                     <p className="text-sm font-medium text-foreground mb-1">
                       Arraste seus arquivos aqui
                     </p>
@@ -316,17 +319,23 @@ export default function Upload() {
             </CardHeader>
             <CardContent className="space-y-4">
               {recentUploads.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8 bg-muted/20 rounded-lg border border-dashed">
-                  Nenhum upload recente encontrado.
-                </p>
+                <div className="flex flex-col items-center justify-center py-12 bg-muted/10 rounded-lg border border-dashed animate-fade-in-up group">
+                  <div className="relative w-16 h-16 mb-4">
+                    <div className="absolute inset-0 bg-[#F59E0B]/10 rounded-full" />
+                    <UploadCloud className="absolute inset-0 m-auto w-8 h-8 text-[#F59E0B] transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-110" />
+                  </div>
+                  <p className="text-sm text-muted-foreground text-center font-medium">
+                    Nenhum upload recente.
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-3">
                   {recentUploads.map((doc) => (
                     <div
                       key={doc.id}
-                      className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/10 transition-colors"
+                      className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 hover:border-[#3B82F6]/30 transition-all group"
                     >
-                      <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
+                      <div className="p-2 bg-[#3B82F6]/10 text-[#3B82F6] rounded-lg shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
                         <FileText className="h-4 w-4" />
                       </div>
                       <div className="overflow-hidden w-full">

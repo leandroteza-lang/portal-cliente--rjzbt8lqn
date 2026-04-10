@@ -121,9 +121,21 @@ export default function Notifications() {
             </Card>
           ))
         ) : filteredNotificacoes.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-xl border border-dashed">
-            <Bell className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500 font-medium">Nenhuma notificação encontrada.</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 animate-fade-in-up group">
+            <div className="relative w-28 h-28 mb-6">
+              <div className="absolute inset-0 bg-[#3B82F6]/10 dark:bg-[#3B82F6]/20 rounded-full animate-ping" />
+              <div className="absolute inset-4 bg-[#3B82F6]/20 dark:bg-[#3B82F6]/30 rounded-full" />
+              <Bell className="absolute inset-0 m-auto w-12 h-12 text-[#3B82F6] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" />
+              <div className="absolute top-2 right-2 w-6 h-6 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-sm border border-slate-100">
+                <Check className="w-4 h-4 text-[#10B981]" />
+              </div>
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+              Caixa de entrada vazia
+            </h3>
+            <p className="text-sm text-slate-500 max-w-sm">
+              Você não possui novas notificações no momento. Tudo atualizado!
+            </p>
           </div>
         ) : (
           filteredNotificacoes.map((notif) => (
@@ -172,18 +184,20 @@ export default function Notifications() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleMarkAsRead(notif.id)}
-                      className="text-primary hover:text-primary hover:bg-primary/10"
+                      className="text-[#10B981] hover:text-[#059669] hover:bg-[#10B981]/10 group"
                     >
-                      <Check className="h-4 w-4 mr-1" /> Lido
+                      <Check className="h-4 w-4 mr-1 transition-transform duration-300 group-hover:scale-125" />{' '}
+                      Lido
                     </Button>
                   )}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(notif.id)}
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                    className="text-slate-400 hover:text-[#EF4444] hover:bg-[#EF4444]/10 group"
                   >
-                    <Trash2 className="h-4 w-4 mr-1" /> Excluir
+                    <Trash2 className="h-4 w-4 mr-1 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />{' '}
+                    Excluir
                   </Button>
                 </div>
               </CardContent>

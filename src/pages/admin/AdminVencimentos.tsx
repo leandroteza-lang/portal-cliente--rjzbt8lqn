@@ -150,57 +150,86 @@ export default function AdminVencimentos() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {vencimentos.map((v) => (
-                <TableRow key={v.id}>
-                  <TableCell className="font-medium">{v.clientes?.nome || 'N/A'}</TableCell>
-                  <TableCell>{v.tipo_guia}</TableCell>
-                  <TableCell>{format(new Date(v.data_vencimento), 'dd/MM/yyyy')}</TableCell>
-                  <TableCell>
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                      v.valor,
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        v.status === 'Pago'
-                          ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                          : v.status === 'Enviado'
-                            ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                            : 'bg-red-100 text-red-700 hover:bg-red-200'
-                      }
-                    >
-                      {v.status || 'Pendente'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right space-x-1">
-                    <Button variant="ghost" size="icon" onClick={() => setViewItem(v)}>
-                      <Eye className="w-4 h-4 text-slate-500" />
-                    </Button>
-                    {v.status === 'Pendente' && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleUpdateStatus(v.id, 'Enviado')}
-                      >
-                        <Send className="w-4 h-4 text-blue-500" />
-                      </Button>
-                    )}
-                    {v.status !== 'Pago' && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleUpdateStatus(v.id, 'Pago')}
-                      >
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}>
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
+              {vencimentos.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-64 text-center">
+                    <div className="flex flex-col items-center justify-center py-8 animate-fade-in-up group">
+                      <div className="relative w-24 h-24 mb-4">
+                        <div className="absolute inset-0 bg-[#10B981]/10 rounded-full" />
+                        <CheckCircle className="absolute inset-0 m-auto w-10 h-10 text-[#10B981] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12" />
+                      </div>
+                      <p className="text-slate-600 font-medium">
+                        Nenhum vencimento pendente com esses filtros.
+                      </p>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                vencimentos.map((v) => (
+                  <TableRow key={v.id}>
+                    <TableCell className="font-medium">{v.clientes?.nome || 'N/A'}</TableCell>
+                    <TableCell>{v.tipo_guia}</TableCell>
+                    <TableCell>{format(new Date(v.data_vencimento), 'dd/MM/yyyy')}</TableCell>
+                    <TableCell>
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(v.valor)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={
+                          v.status === 'Pago'
+                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                            : v.status === 'Enviado'
+                              ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                              : 'bg-red-100 text-red-700 hover:bg-red-200'
+                        }
+                      >
+                        {v.status || 'Pendente'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setViewItem(v)}
+                        className="group hover:bg-[#3B82F6]/10"
+                      >
+                        <Eye className="w-4 h-4 text-slate-500 group-hover:text-[#3B82F6] transition-transform group-hover:scale-110" />
+                      </Button>
+                      {v.status === 'Pendente' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleUpdateStatus(v.id, 'Enviado')}
+                          className="group hover:bg-[#3B82F6]/10"
+                        >
+                          <Send className="w-4 h-4 text-[#3B82F6] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                        </Button>
+                      )}
+                      {v.status !== 'Pago' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleUpdateStatus(v.id, 'Pago')}
+                          className="group hover:bg-[#10B981]/10"
+                        >
+                          <CheckCircle className="w-4 h-4 text-[#10B981] transition-transform group-hover:scale-110" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(v.id)}
+                        className="group hover:bg-[#EF4444]/10"
+                      >
+                        <Trash2 className="w-4 h-4 text-[#EF4444] transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
           <div className="flex justify-between items-center mt-4">

@@ -173,27 +173,41 @@ export default function AdminNotificacoes() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((n) => (
-                <TableRow key={n.id}>
-                  <TableCell className="font-medium">{n.clientes?.nome || 'N/A'}</TableCell>
-                  <TableCell>{n.tipo}</TableCell>
-                  <TableCell className="max-w-md truncate">{n.mensagem}</TableCell>
-                  <TableCell>
-                    {n.data_criacao && format(new Date(n.data_criacao), 'dd/MM/yyyy HH:mm')}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        n.status === 'Enviado'
-                          ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                          : 'bg-red-100 text-red-700 hover:bg-red-200'
-                      }
-                    >
-                      {n.status}
-                    </Badge>
+              {items.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-64 text-center">
+                    <div className="flex flex-col items-center justify-center py-8 animate-fade-in-up group">
+                      <div className="relative w-24 h-24 mb-4">
+                        <div className="absolute inset-0 bg-[#F59E0B]/10 rounded-full" />
+                        <Send className="absolute inset-0 m-auto w-10 h-10 text-[#F59E0B] transition-transform duration-500 group-hover:translate-x-2 group-hover:-translate-y-2" />
+                      </div>
+                      <p className="text-slate-600 font-medium">Nenhuma notificação encontrada.</p>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                items.map((n) => (
+                  <TableRow key={n.id}>
+                    <TableCell className="font-medium">{n.clientes?.nome || 'N/A'}</TableCell>
+                    <TableCell>{n.tipo}</TableCell>
+                    <TableCell className="max-w-md truncate">{n.mensagem}</TableCell>
+                    <TableCell>
+                      {n.data_criacao && format(new Date(n.data_criacao), 'dd/MM/yyyy HH:mm')}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={
+                          n.status === 'Enviado'
+                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                            : 'bg-red-100 text-red-700 hover:bg-red-200'
+                        }
+                      >
+                        {n.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
           <div className="flex justify-between items-center mt-4">

@@ -102,15 +102,20 @@ export default function Invoices() {
         <h2 className="text-3xl font-bold tracking-tight mb-8 text-slate-800 dark:text-slate-100">
           Faturas e Boletos
         </h2>
-        <Card className="flex h-[50vh] flex-col items-center justify-center text-center shadow-sm border-dashed">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-full mb-4">
-            <FileText className="h-8 w-8 text-slate-400" />
+        <Card className="flex h-[50vh] flex-col items-center justify-center text-center shadow-sm border-dashed group">
+          <div className="relative w-28 h-28 mb-6 animate-fade-in-up">
+            <div className="absolute inset-0 bg-[#10B981]/10 dark:bg-[#10B981]/20 rounded-full animate-ping" />
+            <div className="absolute inset-4 bg-[#10B981]/20 dark:bg-[#10B981]/30 rounded-full" />
+            <FileText className="absolute inset-0 m-auto w-12 h-12 text-[#10B981] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" />
+            <div className="absolute bottom-2 right-2 w-8 h-8 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-800">
+              <CheckCircle2 className="w-5 h-5 text-[#3B82F6]" />
+            </div>
           </div>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-            Nenhuma fatura encontrada
+          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+            Nenhuma fatura no momento
           </h3>
-          <p className="text-sm text-muted-foreground mt-2 max-w-sm">
-            Você não possui faturas no momento. Elas aparecerão aqui quando forem geradas.
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+            Tudo certo por aqui! Você não possui faturas ou boletos pendentes.
           </p>
         </Card>
       </div>
@@ -208,8 +213,16 @@ export default function Invoices() {
               <TableBody>
                 {!filtered.length ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
-                      Nenhuma fatura encontrada para este filtro.
+                    <TableCell colSpan={5} className="h-64 text-center">
+                      <div className="flex flex-col items-center justify-center py-8 animate-fade-in-up group">
+                        <div className="relative w-20 h-20 mb-4">
+                          <div className="absolute inset-0 bg-[#F59E0B]/10 dark:bg-[#F59E0B]/20 rounded-full" />
+                          <Search className="absolute inset-0 m-auto w-8 h-8 text-[#F59E0B] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" />
+                        </div>
+                        <p className="text-slate-600 dark:text-slate-400 font-medium">
+                          Nenhuma fatura encontrada para este filtro.
+                        </p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -225,10 +238,11 @@ export default function Invoices() {
                             <Button
                               variant="outline"
                               size="sm"
+                              className="group hover:border-[#3B82F6] hover:text-[#3B82F6]"
                               onClick={() => handleCopyBarcode(f.codigo_barras!)}
                               title="Copiar código"
                             >
-                              <Copy className="h-4 w-4 sm:mr-1" />
+                              <Copy className="h-4 w-4 sm:mr-1 transition-transform duration-300 group-hover:scale-110" />
                               <span className="hidden sm:inline">Copiar</span>
                             </Button>
                           )}
@@ -236,10 +250,11 @@ export default function Invoices() {
                             <Button
                               variant="default"
                               size="sm"
+                              className="group bg-[#10B981] hover:bg-[#059669] text-white"
                               onClick={() => window.open(f.link_boleto!, '_blank')}
                               title="Baixar"
                             >
-                              <Download className="h-4 w-4 sm:mr-1" />
+                              <Download className="h-4 w-4 sm:mr-1 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5" />
                               <span className="hidden sm:inline">Boleto</span>
                             </Button>
                           )}

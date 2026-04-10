@@ -153,47 +153,67 @@ export default function AdminClientes() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clientes.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell>
-                    <div className="font-medium text-slate-800">{c.nome}</div>
-                    <div className="text-xs text-slate-500">{c.razao_social}</div>
-                  </TableCell>
-                  <TableCell>{c.cnpj}</TableCell>
-                  <TableCell>
-                    <div className="text-sm">{c.email}</div>
-                    <div className="text-xs text-slate-500">{c.telefone}</div>
-                  </TableCell>
-                  <TableCell>
-                    {c.data_criacao && format(new Date(c.data_criacao), 'dd/MM/yyyy')}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={c.ativo ? 'default' : 'secondary'}
-                      className={
-                        c.ativo ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : ''
-                      }
-                    >
-                      {c.ativo ? 'Ativo' : 'Inativo'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setFormData(c)
-                        setIsModalOpen(true)
-                      }}
-                    >
-                      <Edit className="w-4 h-4 text-slate-500" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}>
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
+              {clientes.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-64 text-center">
+                    <div className="flex flex-col items-center justify-center py-8 animate-fade-in-up group">
+                      <div className="relative w-24 h-24 mb-4">
+                        <div className="absolute inset-0 bg-[#3B82F6]/10 rounded-full" />
+                        <Search className="absolute inset-0 m-auto w-10 h-10 text-[#3B82F6] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" />
+                      </div>
+                      <p className="text-slate-600 font-medium">Nenhum cliente encontrado.</p>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                clientes.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell>
+                      <div className="font-medium text-slate-800">{c.nome}</div>
+                      <div className="text-xs text-slate-500">{c.razao_social}</div>
+                    </TableCell>
+                    <TableCell>{c.cnpj}</TableCell>
+                    <TableCell>
+                      <div className="text-sm">{c.email}</div>
+                      <div className="text-xs text-slate-500">{c.telefone}</div>
+                    </TableCell>
+                    <TableCell>
+                      {c.data_criacao && format(new Date(c.data_criacao), 'dd/MM/yyyy')}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={c.ativo ? 'default' : 'secondary'}
+                        className={
+                          c.ativo ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : ''
+                        }
+                      >
+                        {c.ativo ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="group hover:bg-[#3B82F6]/10"
+                        onClick={() => {
+                          setFormData(c)
+                          setIsModalOpen(true)
+                        }}
+                      >
+                        <Edit className="w-4 h-4 text-slate-500 group-hover:text-[#3B82F6] transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(c.id)}
+                        className="group hover:bg-[#EF4444]/10"
+                      >
+                        <Trash2 className="w-4 h-4 text-[#EF4444] transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
           <div className="flex justify-between items-center mt-4">

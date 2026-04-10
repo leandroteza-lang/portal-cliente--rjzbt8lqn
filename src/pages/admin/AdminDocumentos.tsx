@@ -174,49 +174,79 @@ export default function AdminDocumentos() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {docs.map((d) => (
-                <TableRow key={d.id}>
-                  <TableCell className="font-medium">{d.nome}</TableCell>
-                  <TableCell>{d.clientes?.nome || 'N/A'}</TableCell>
-                  <TableCell>{d.categoria}</TableCell>
-                  <TableCell>
-                    {d.data_upload && format(new Date(d.data_upload), 'dd/MM/yyyy')}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        d.status === 'Concluído'
-                          ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                          : d.status === 'Erro'
-                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                            : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                      }
-                    >
-                      {d.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right space-x-1">
-                    <Button variant="ghost" size="icon" onClick={() => setViewDoc(d)}>
-                      <Eye className="w-4 h-4 text-slate-500" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDownload(d.arquivo_url, d.nome)}
-                    >
-                      <Download className="w-4 h-4 text-slate-500" />
-                    </Button>
-                    {d.status !== 'Concluído' && (
-                      <Button variant="ghost" size="icon" onClick={() => handleProcess(d.id)}>
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(d.id)}>
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
+              {docs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-64 text-center">
+                    <div className="flex flex-col items-center justify-center py-8 animate-fade-in-up group">
+                      <div className="relative w-24 h-24 mb-4">
+                        <div className="absolute inset-0 bg-[#3B82F6]/10 rounded-full" />
+                        <FileText className="absolute inset-0 m-auto w-10 h-10 text-[#3B82F6] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" />
+                      </div>
+                      <p className="text-slate-600 font-medium">Nenhum documento encontrado.</p>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                docs.map((d) => (
+                  <TableRow key={d.id}>
+                    <TableCell className="font-medium">{d.nome}</TableCell>
+                    <TableCell>{d.clientes?.nome || 'N/A'}</TableCell>
+                    <TableCell>{d.categoria}</TableCell>
+                    <TableCell>
+                      {d.data_upload && format(new Date(d.data_upload), 'dd/MM/yyyy')}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={
+                          d.status === 'Concluído'
+                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                            : d.status === 'Erro'
+                              ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                              : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                        }
+                      >
+                        {d.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setViewDoc(d)}
+                        className="group hover:bg-[#3B82F6]/10"
+                      >
+                        <Eye className="w-4 h-4 text-slate-500 group-hover:text-[#3B82F6] transition-transform group-hover:scale-110" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDownload(d.arquivo_url, d.nome)}
+                        className="group hover:bg-[#10B981]/10"
+                      >
+                        <Download className="w-4 h-4 text-slate-500 group-hover:text-[#10B981] transition-transform group-hover:scale-110 group-hover:-translate-y-0.5" />
+                      </Button>
+                      {d.status !== 'Concluído' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleProcess(d.id)}
+                          className="group hover:bg-[#10B981]/10"
+                        >
+                          <CheckCircle className="w-4 h-4 text-emerald-500 transition-transform group-hover:scale-110" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(d.id)}
+                        className="group hover:bg-[#EF4444]/10"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500 transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
           <div className="flex justify-between items-center mt-4">

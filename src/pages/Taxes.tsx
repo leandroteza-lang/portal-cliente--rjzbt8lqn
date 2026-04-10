@@ -89,9 +89,11 @@ export default function Taxes() {
     return (
       <div
         onClick={() => setSelectedTax(tax)}
-        className="flex items-center gap-4 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer group"
+        className="flex items-center gap-4 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-all hover:scale-[1.01] cursor-pointer group"
       >
-        <div className={`p-2 rounded-full shrink-0 ${TAX_COLORS[tax.tax_type] || 'bg-slate-100'}`}>
+        <div
+          className={`p-2 rounded-full shrink-0 transition-transform duration-300 group-hover:rotate-12 ${TAX_COLORS[tax.tax_type] || 'bg-slate-100'}`}
+        >
           <Landmark className="h-4 w-4" />
         </div>
         <div className="flex-1 space-y-1 min-w-0">
@@ -164,9 +166,13 @@ export default function Taxes() {
             </CardHeader>
             <CardContent>
               {monthTaxes.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Nenhum imposto neste mês.
-                </p>
+                <div className="flex flex-col items-center justify-center py-10 animate-fade-in-up group">
+                  <div className="relative w-20 h-20 mb-4">
+                    <div className="absolute inset-0 bg-[#10B981]/10 rounded-full" />
+                    <CalendarIcon className="absolute inset-0 m-auto w-10 h-10 text-[#10B981] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6" />
+                  </div>
+                  <p className="text-sm text-slate-600 font-medium">Nenhum imposto neste mês.</p>
+                </div>
               ) : (
                 <div className="space-y-3">
                   {monthTaxes.map((tax) => (
@@ -190,9 +196,19 @@ export default function Taxes() {
             <CardContent className="flex-1 p-0">
               <ScrollArea className="h-[500px] px-6 pb-6">
                 {upcoming.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    Tudo em dia! Nenhum vencimento próximo.
-                  </p>
+                  <div className="flex flex-col items-center justify-center py-16 animate-fade-in-up group">
+                    <div className="relative w-24 h-24 mb-5">
+                      <div className="absolute inset-0 bg-[#10B981]/10 rounded-full animate-pulse" />
+                      <div className="absolute inset-3 bg-[#10B981]/20 rounded-full" />
+                      <CheckCircle2 className="absolute inset-0 m-auto w-10 h-10 text-[#10B981] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" />
+                    </div>
+                    <p className="text-base text-slate-800 dark:text-slate-200 font-bold mb-1">
+                      Tudo em dia!
+                    </p>
+                    <p className="text-sm text-slate-500 text-center max-w-[200px]">
+                      Nenhum vencimento próximo nos próximos 30 dias.
+                    </p>
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     {upcoming.map((tax) => (

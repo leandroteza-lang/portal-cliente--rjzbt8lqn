@@ -245,28 +245,28 @@ export default function Documents() {
                             variant="ghost"
                             size="icon"
                             title="Visualizar"
-                            className="hover:text-primary hover:bg-primary/10"
+                            className="hover:text-[#3B82F6] hover:bg-[#3B82F6]/10 group"
                             onClick={() => setViewingDoc(doc)}
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             title="Baixar"
-                            className="hover:text-primary hover:bg-primary/10"
+                            className="hover:text-[#10B981] hover:bg-[#10B981]/10 group"
                             onClick={() => handleDownload(doc)}
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             title="Excluir"
                             onClick={() => handleDelete(doc.id)}
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"
+                            className="text-slate-400 hover:text-[#EF4444] hover:bg-[#EF4444]/10 group"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
                           </Button>
                         </div>
                       </TableCell>
@@ -274,12 +274,23 @@ export default function Documents() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-40 text-center text-muted-foreground">
-                      <div className="flex flex-col items-center justify-center gap-3">
-                        <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-full">
-                          <FileText className="h-8 w-8 text-slate-400" />
+                    <TableCell colSpan={5} className="h-64 text-center">
+                      <div className="flex flex-col items-center justify-center py-8 animate-fade-in-up group">
+                        <div className="relative w-24 h-24 mb-6">
+                          <div className="absolute inset-0 bg-[#3B82F6]/10 dark:bg-[#3B82F6]/20 rounded-full animate-ping" />
+                          <div className="absolute inset-3 bg-[#3B82F6]/20 dark:bg-[#3B82F6]/30 rounded-full" />
+                          <FileText className="absolute inset-0 m-auto w-10 h-10 text-[#3B82F6] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" />
+                          <div className="absolute bottom-0 right-0 w-8 h-8 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-800">
+                            <Search className="w-4 h-4 text-[#F59E0B]" />
+                          </div>
                         </div>
-                        <p>Nenhum documento encontrado.</p>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">
+                          Nenhum documento encontrado
+                        </h3>
+                        <p className="text-sm text-slate-500 max-w-sm">
+                          Não encontramos documentos correspondentes. Tente ajustar os filtros de
+                          busca.
+                        </p>
                       </div>
                     </TableCell>
                   </TableRow>
