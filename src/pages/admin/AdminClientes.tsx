@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { Search, Plus, Edit, Trash2, Filter } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Filter, RefreshCw, CheckCircle2 } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   Table,
@@ -34,6 +34,11 @@ type Cliente = {
   whatsapp: string
   ativo: boolean
   data_criacao: string
+  sincronizado_rfb?: boolean
+  data_ultima_sincronizacao?: string
+  situacao_cadastral?: string
+  endereco?: string
+  data_abertura?: string
 }
 
 export default function AdminClientes() {
@@ -44,6 +49,11 @@ export default function AdminClientes() {
   const [filtros, setFiltros] = useState({ ativo: true, inativo: true })
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState<Partial<Cliente>>({})
+  const [oldFormData, setOldFormData] = useState<Partial<Cliente>>({})
+
+  const [isFetchingRfb, setIsFetchingRfb] = useState(false)
+  const [isDiffModalOpen, setIsDiffModalOpen] = useState(false)
+  const [rfbDiffData, setRfbDiffData] = useState<any>(null)
 
   const loadClientes = async () => {
     let query = supabase.from('clientes').select('*', { count: 'exact' })
@@ -64,7 +74,38 @@ export default function AdminClientes() {
 
   const handleSave = async () => {
     if (formData.id) {
-      await supabase.from('clientes').update(formData).eq('id', formData.id)
+      const updateData = {
+        nome: formData.nome,
+        cnpj: formData.cnpj,
+        razao_social: formData.razao_social,
+        email: formData.email,
+        telefone: formData.telefone,
+        whatsapp: formData.whatsapp,
+        ativo: formData.ativo,
+        sincronizado_rfb: formData.sincronizado_rfb,
+        data_ultima_sincronizacao: formData.data_ultima_sincronizacao,
+        situacao_cadastral: formData.situacao_cadastral,
+        endereco: formData.endereco,
+        data_abertura: formData.data_abertura,
+      }
+
+      const { error } = await supabase.from('clientes').update(updateData).eq('id', formData.id)
+      if (error) {
+        toast.error('Erro ao atualizar cliente')
+        return
+      }
+
+      if (
+        updateData.sincronizado_rfb &&
+        updateData.data_ultima_sincronizacao !== oldFormData.data_ultima_sincronizacao
+      ) {
+        await supabase.from('historico_clientes').insert({
+          cliente_id: formData.id,
+          dados_antigos: oldFormData,
+          dados_novos: updateData,
+        })
+      }
+
       toast.success('Cliente atualizado')
     } else {
       toast.error(
@@ -83,6 +124,65 @@ export default function AdminClientes() {
     }
   }
 
+  const applyRfbData = (rfbData: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      razao_social: rfbData.razao_social || prev.razao_social,
+      nome: rfbData.nome_fantasia || rfbData.razao_social || prev.nome,
+      telefone: rfbData.telefone || prev.telefone,
+      email: rfbData.email || prev.email,
+      situacao_cadastral: rfbData.situacao_cadastral,
+      endereco: rfbData.endereco,
+      data_abertura: rfbData.data_abertura,
+      sincronizado_rfb: true,
+      data_ultima_sincronizacao: new Date().toISOString(),
+    }))
+  }
+
+  const handleBuscarRfb = async () => {
+    if (!formData.cnpj) {
+      toast.error('Informe o CNPJ para buscar.')
+      return
+    }
+    setIsFetchingRfb(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-rfb-data', {
+        body: { cnpj: formData.cnpj },
+      })
+      if (error || !data?.success)
+        throw new Error(data?.error || error?.message || 'Erro ao buscar dados')
+
+      const rfbData = data.data
+
+      if (rfbData.situacao_cadastral && rfbData.situacao_cadastral.toUpperCase() !== 'ATIVA') {
+        toast.warning(`Atenção: Situação cadastral na RFB é ${rfbData.situacao_cadastral}`)
+      }
+
+      if (formData.id) {
+        const hasDiff =
+          (rfbData.razao_social && rfbData.razao_social !== formData.razao_social) ||
+          (rfbData.nome_fantasia && rfbData.nome_fantasia !== formData.nome) ||
+          (rfbData.telefone && rfbData.telefone !== formData.telefone) ||
+          (rfbData.email && rfbData.email !== formData.email)
+
+        if (hasDiff) {
+          setRfbDiffData(rfbData)
+          setIsDiffModalOpen(true)
+        } else {
+          applyRfbData(rfbData)
+          toast.success('Dados da RFB estão iguais aos cadastrados.')
+        }
+      } else {
+        applyRfbData(rfbData)
+        toast.success('Dados preenchidos com sucesso!')
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Erro na busca. Verifique se o CNPJ é válido.')
+    } finally {
+      setIsFetchingRfb(false)
+    }
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
@@ -90,6 +190,7 @@ export default function AdminClientes() {
         <Button
           onClick={() => {
             setFormData({ ativo: true })
+            setOldFormData({})
             setIsModalOpen(true)
           }}
           className="bg-emerald-500 hover:bg-emerald-600"
@@ -181,14 +282,25 @@ export default function AdminClientes() {
                       {c.data_criacao && format(new Date(c.data_criacao), 'dd/MM/yyyy')}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={c.ativo ? 'default' : 'secondary'}
-                        className={
-                          c.ativo ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : ''
-                        }
-                      >
-                        {c.ativo ? 'Ativo' : 'Inativo'}
-                      </Badge>
+                      <div className="flex flex-col gap-1 items-start">
+                        <Badge
+                          variant={c.ativo ? 'default' : 'secondary'}
+                          className={
+                            c.ativo ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : ''
+                          }
+                        >
+                          {c.ativo ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                        {c.sincronizado_rfb && (
+                          <Badge
+                            variant="outline"
+                            className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] py-0 h-4"
+                          >
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            Sinc. RFB
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -197,6 +309,7 @@ export default function AdminClientes() {
                         className="group hover:bg-[#3B82F6]/10"
                         onClick={() => {
                           setFormData(c)
+                          setOldFormData(c)
                           setIsModalOpen(true)
                         }}
                       >
@@ -241,23 +354,40 @@ export default function AdminClientes() {
       </Card>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{formData.id ? 'Editar Cliente' : 'Novo Cliente'}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label>Nome</Label>
+              <Label>CNPJ / CPF</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={formData.cnpj || ''}
+                  onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                  placeholder="Apenas números"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBuscarRfb}
+                  disabled={isFetchingRfb || !formData.cnpj}
+                >
+                  {isFetchingRfb ? (
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4 mr-2" />
+                  )}
+                  Buscar RFB
+                </Button>
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label>Nome / Fantasia</Label>
               <Input
                 value={formData.nome || ''}
                 onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>CNPJ</Label>
-              <Input
-                value={formData.cnpj || ''}
-                onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
               />
             </div>
             <div className="grid gap-2">
@@ -290,6 +420,24 @@ export default function AdminClientes() {
                 />
               </div>
             </div>
+            {formData.situacao_cadastral && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label>Situação Cadastral</Label>
+                  <Input value={formData.situacao_cadastral} disabled className="bg-slate-50" />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Data Abertura</Label>
+                  <Input value={formData.data_abertura || ''} disabled className="bg-slate-50" />
+                </div>
+              </div>
+            )}
+            {formData.endereco && (
+              <div className="grid gap-2">
+                <Label>Endereço</Label>
+                <Input value={formData.endereco} disabled className="bg-slate-50" />
+              </div>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
@@ -297,6 +445,88 @@ export default function AdminClientes() {
             </Button>
             <Button onClick={handleSave} className="bg-emerald-500 hover:bg-emerald-600">
               Salvar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDiffModalOpen} onOpenChange={setIsDiffModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Divergência de Dados - RFB</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-slate-500 mb-4">
+              Foram encontradas diferenças entre os dados cadastrados e os dados da Receita Federal.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border rounded-md p-4 bg-slate-50">
+                <h4 className="font-semibold mb-2">Dados Atuais</h4>
+                <div className="space-y-2 text-sm">
+                  <p>
+                    <strong>Razão Social:</strong> {formData.razao_social || '-'}
+                  </p>
+                  <p>
+                    <strong>Nome/Fantasia:</strong> {formData.nome || '-'}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {formData.email || '-'}
+                  </p>
+                  <p>
+                    <strong>Telefone:</strong> {formData.telefone || '-'}
+                  </p>
+                </div>
+              </div>
+              <div className="border rounded-md p-4 bg-emerald-50">
+                <h4 className="font-semibold mb-2 text-emerald-800">Dados da RFB</h4>
+                <div className="space-y-2 text-sm text-emerald-900">
+                  <p>
+                    <strong>Razão Social:</strong> {rfbDiffData?.razao_social || '-'}
+                  </p>
+                  <p>
+                    <strong>Nome/Fantasia:</strong>{' '}
+                    {rfbDiffData?.nome_fantasia || rfbDiffData?.razao_social || '-'}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {rfbDiffData?.email || '-'}
+                  </p>
+                  <p>
+                    <strong>Telefone:</strong> {rfbDiffData?.telefone || '-'}
+                  </p>
+                  <p>
+                    <strong>Situação:</strong> {rfbDiffData?.situacao_cadastral || '-'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFormData((prev) => ({
+                  ...prev,
+                  situacao_cadastral: rfbDiffData?.situacao_cadastral,
+                  data_abertura: rfbDiffData?.data_abertura,
+                  endereco: rfbDiffData?.endereco,
+                  sincronizado_rfb: true,
+                  data_ultima_sincronizacao: new Date().toISOString(),
+                }))
+                setIsDiffModalOpen(false)
+                toast.info('Dados mantidos. Situação cadastral e endereço atualizados.')
+              }}
+            >
+              Manter Atuais
+            </Button>
+            <Button
+              onClick={() => {
+                applyRfbData(rfbDiffData)
+                setIsDiffModalOpen(false)
+                toast.success('Dados atualizados com as informações da RFB.')
+              }}
+              className="bg-emerald-500 hover:bg-emerald-600"
+            >
+              Atualizar com RFB
             </Button>
           </div>
         </DialogContent>
