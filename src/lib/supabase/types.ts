@@ -1,14 +1,94 @@
 // AVOID UPDATING THIS FILE DIRECTLY. It is automatically generated.
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.5'
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
+      clientes: {
+        Row: {
+          ativo: boolean | null
+          cnpj: string | null
+          data_criacao: string | null
+          email: string | null
+          id: string
+          nome: string | null
+          razao_social: string | null
+          telefone: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          cnpj?: string | null
+          data_criacao?: string | null
+          email?: string | null
+          id: string
+          nome?: string | null
+          razao_social?: string | null
+          telefone?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          cnpj?: string | null
+          data_criacao?: string | null
+          email?: string | null
+          id?: string
+          nome?: string | null
+          razao_social?: string | null
+          telefone?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      documentos: {
+        Row: {
+          arquivo_url: string | null
+          categoria: string
+          cliente_id: string | null
+          data_upload: string | null
+          id: string
+          nome: string
+          status: string | null
+        }
+        Insert: {
+          arquivo_url?: string | null
+          categoria: string
+          cliente_id?: string | null
+          data_upload?: string | null
+          id?: string
+          nome: string
+          status?: string | null
+        }
+        Update: {
+          arquivo_url?: string | null
+          categoria?: string
+          cliente_id?: string | null
+          data_upload?: string | null
+          id?: string
+          nome?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           category: string
@@ -47,6 +127,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      notificacoes: {
+        Row: {
+          cliente_id: string | null
+          data_criacao: string | null
+          id: string
+          lido: boolean | null
+          mensagem: string
+          tipo: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          data_criacao?: string | null
+          id?: string
+          lido?: boolean | null
+          mensagem: string
+          tipo: string
+        }
+        Update: {
+          cliente_id?: string | null
+          data_criacao?: string | null
+          id?: string
+          lido?: boolean | null
+          mensagem?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -141,6 +256,41 @@ export type Database = {
         }
         Relationships: []
       }
+      vencimentos: {
+        Row: {
+          cliente_id: string | null
+          data_vencimento: string
+          id: string
+          status: string | null
+          tipo_guia: string
+          valor: number
+        }
+        Insert: {
+          cliente_id?: string | null
+          data_vencimento: string
+          id?: string
+          status?: string | null
+          tipo_guia: string
+          valor: number
+        }
+        Update: {
+          cliente_id?: string | null
+          data_vencimento?: string
+          id?: string
+          status?: string | null
+          tipo_guia?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vencimentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -157,31 +307,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -190,23 +342,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -215,23 +367,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -240,36 +392,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
@@ -277,6 +429,7 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
 
 // ====== DATABASE EXTENDED CONTEXT (auto-generated) ======
 // This section contains actual PostgreSQL column types, constraints, RLS policies,
@@ -288,6 +441,24 @@ export const Constants = {
 // --- COLUMN TYPES (actual PostgreSQL types) ---
 // Use this to know the real database type when writing migrations.
 // "string" in TypeScript types above may be uuid, text, varchar, timestamptz, etc.
+// Table: clientes
+//   id: uuid (not null)
+//   nome: text (nullable)
+//   cnpj: text (nullable)
+//   razao_social: text (nullable)
+//   email: text (nullable)
+//   telefone: text (nullable)
+//   whatsapp: text (nullable)
+//   ativo: boolean (nullable, default: true)
+//   data_criacao: timestamp with time zone (nullable, default: now())
+// Table: documentos
+//   id: uuid (not null, default: gen_random_uuid())
+//   cliente_id: uuid (nullable)
+//   nome: text (not null)
+//   categoria: text (not null)
+//   arquivo_url: text (nullable)
+//   status: text (nullable, default: 'Processando'::text)
+//   data_upload: timestamp with time zone (nullable, default: now())
 // Table: documents
 //   id: uuid (not null, default: gen_random_uuid())
 //   user_id: uuid (not null)
@@ -299,6 +470,13 @@ export const Constants = {
 //   created_at: timestamp with time zone (not null, default: now())
 //   updated_at: timestamp with time zone (not null, default: now())
 //   is_favorite: boolean (nullable, default: false)
+// Table: notificacoes
+//   id: uuid (not null, default: gen_random_uuid())
+//   cliente_id: uuid (nullable)
+//   tipo: text (not null)
+//   mensagem: text (not null)
+//   lido: boolean (nullable, default: false)
+//   data_criacao: timestamp with time zone (nullable, default: now())
 // Table: profiles
 //   id: uuid (not null)
 //   full_name: text (nullable)
@@ -326,19 +504,55 @@ export const Constants = {
 //   status: text (not null, default: 'Pendente'::text)
 //   created_at: timestamp with time zone (not null, default: now())
 //   updated_at: timestamp with time zone (not null, default: now())
+// Table: vencimentos
+//   id: uuid (not null, default: gen_random_uuid())
+//   cliente_id: uuid (nullable)
+//   tipo_guia: text (not null)
+//   data_vencimento: date (not null)
+//   valor: numeric (not null)
+//   status: text (nullable, default: 'Pendente'::text)
 
 // --- CONSTRAINTS ---
+// Table: clientes
+//   FOREIGN KEY clientes_id_fkey: FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
+//   PRIMARY KEY clientes_pkey: PRIMARY KEY (id)
+// Table: documentos
+//   FOREIGN KEY documentos_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+//   PRIMARY KEY documentos_pkey: PRIMARY KEY (id)
 // Table: documents
 //   PRIMARY KEY documents_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY documents_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+// Table: notificacoes
+//   FOREIGN KEY notificacoes_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+//   PRIMARY KEY notificacoes_pkey: PRIMARY KEY (id)
 // Table: profiles
 //   FOREIGN KEY profiles_id_fkey: FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
 //   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
 // Table: taxes
 //   PRIMARY KEY taxes_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY taxes_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+// Table: vencimentos
+//   FOREIGN KEY vencimentos_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+//   PRIMARY KEY vencimentos_pkey: PRIMARY KEY (id)
 
 // --- ROW LEVEL SECURITY POLICIES ---
+// Table: clientes
+//   Policy "authenticated_insert_clientes" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (auth.uid() = id)
+//   Policy "authenticated_select_clientes" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (auth.uid() = id)
+//   Policy "authenticated_update_clientes" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: (auth.uid() = id)
+//     WITH CHECK: (auth.uid() = id)
+// Table: documentos
+//   Policy "authenticated_delete_documentos" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: (auth.uid() = cliente_id)
+//   Policy "authenticated_insert_documentos" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (auth.uid() = cliente_id)
+//   Policy "authenticated_select_documentos" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (auth.uid() = cliente_id)
+//   Policy "authenticated_update_documentos" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: (auth.uid() = cliente_id)
 // Table: documents
 //   Policy "authenticated_delete" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: (auth.uid() = user_id)
@@ -348,6 +562,12 @@ export const Constants = {
 //     USING: (auth.uid() = user_id)
 //   Policy "authenticated_update" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: (auth.uid() = user_id)
+// Table: notificacoes
+//   Policy "authenticated_select_notificacoes" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (auth.uid() = cliente_id)
+//   Policy "authenticated_update_notificacoes" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: (auth.uid() = cliente_id)
+//     WITH CHECK: (auth.uid() = cliente_id)
 // Table: profiles
 //   Policy "authenticated_insert_profiles" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: (auth.uid() = id)
@@ -359,6 +579,9 @@ export const Constants = {
 // Table: taxes
 //   Policy "authenticated_select" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: (auth.uid() = user_id)
+// Table: vencimentos
+//   Policy "authenticated_select_vencimentos" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (auth.uid() = cliente_id)
 
 // --- DATABASE FUNCTIONS ---
 // FUNCTION handle_new_user()
@@ -368,16 +591,17 @@ export const Constants = {
 //    SECURITY DEFINER
 //   AS $function$
 //   BEGIN
+//     -- Popula profiles
 //     INSERT INTO public.profiles (
-//       id,
-//       email,
-//       full_name,
-//       document_number,
-//       company_name,
+//       id, 
+//       email, 
+//       full_name, 
+//       document_number, 
+//       company_name, 
 //       phone
 //     )
 //     VALUES (
-//       NEW.id,
+//       NEW.id, 
 //       NEW.email,
 //       NEW.raw_user_meta_data->>'full_name',
 //       NEW.raw_user_meta_data->>'document_number',
@@ -390,7 +614,33 @@ export const Constants = {
 //       document_number = COALESCE(EXCLUDED.document_number, public.profiles.document_number),
 //       company_name = COALESCE(EXCLUDED.company_name, public.profiles.company_name),
 //       phone = COALESCE(EXCLUDED.phone, public.profiles.phone);
+//   
+//     -- Popula clientes
+//     INSERT INTO public.clientes (
+//       id, 
+//       email, 
+//       nome, 
+//       cnpj, 
+//       razao_social, 
+//       telefone
+//     )
+//     VALUES (
+//       NEW.id, 
+//       NEW.email,
+//       NEW.raw_user_meta_data->>'full_name',
+//       NEW.raw_user_meta_data->>'document_number',
+//       NEW.raw_user_meta_data->>'company_name',
+//       NEW.raw_user_meta_data->>'phone'
+//     )
+//     ON CONFLICT (id) DO UPDATE SET
+//       email = EXCLUDED.email,
+//       nome = COALESCE(EXCLUDED.nome, public.clientes.nome),
+//       cnpj = COALESCE(EXCLUDED.cnpj, public.clientes.cnpj),
+//       razao_social = COALESCE(EXCLUDED.razao_social, public.clientes.razao_social),
+//       telefone = COALESCE(EXCLUDED.telefone, public.clientes.telefone);
+//   
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
+
