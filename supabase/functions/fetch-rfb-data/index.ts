@@ -16,7 +16,7 @@ Deno.serve(async (req: Request) => {
       const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanDoc}`)
 
       if (!response.ok) {
-        throw new Error('CNPJ não encontrado na base de dados.')
+        throw new Error('CNPJ não encontrado na base de dados da Receita Federal.')
       }
 
       const data = await response.json()
@@ -33,6 +33,17 @@ Deno.serve(async (req: Request) => {
             /^[,\s-]+|[,\s-]+$/g,
             '',
           ),
+        cep: data.cep || '',
+        logradouro: data.logradouro || '',
+        numero: data.numero || '',
+        complemento: data.complemento || '',
+        bairro: data.bairro || '',
+        cidade: data.municipio || '',
+        estado: data.uf || '',
+        cnae: data.cnae_fiscal_descricao
+          ? `${data.cnae_fiscal} - ${data.cnae_fiscal_descricao}`
+          : data.cnae_fiscal || '',
+        natureza_juridica: data.natureza_juridica || '',
       }
 
       return new Response(JSON.stringify({ success: true, data: result }), {
