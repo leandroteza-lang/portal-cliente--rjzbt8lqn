@@ -6,6 +6,7 @@ import Layout from './components/Layout'
 import Index from './pages/Index'
 import Documents from './pages/Documents'
 import Profile from './pages/Profile'
+import Taxes from './pages/Taxes'
 import NotFound from './pages/NotFound'
 import Login from './pages/Login'
 import { AuthProvider, useAuth } from './hooks/use-auth'
@@ -45,7 +46,7 @@ const AppRoutes = () => (
     <Route element={<ProtectedRoute />}>
       <Route path="/" element={<Index />} />
       <Route path="/documentos" element={<Documents />} />
-      <Route path="/impostos" element={<Placeholder title="Meus Impostos" />} />
+      <Route path="/impostos" element={<Taxes />} />
       <Route path="/faturas" element={<Placeholder title="Faturas e Boletos" />} />
       <Route path="/mensagens" element={<Placeholder title="Central de Mensagens" />} />
       <Route path="/perfil" element={<Profile />} />
