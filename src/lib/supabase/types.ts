@@ -13,36 +13,51 @@ export type Database = {
         Row: {
           ativo: boolean | null
           cnpj: string | null
+          data_abertura: string | null
           data_criacao: string | null
+          data_ultima_sincronizacao: string | null
           email: string | null
+          endereco: string | null
           id: string
           nome: string | null
           preferencias_notificacao: Json | null
           razao_social: string | null
+          sincronizado_rfb: boolean | null
+          situacao_cadastral: string | null
           telefone: string | null
           whatsapp: string | null
         }
         Insert: {
           ativo?: boolean | null
           cnpj?: string | null
+          data_abertura?: string | null
           data_criacao?: string | null
+          data_ultima_sincronizacao?: string | null
           email?: string | null
+          endereco?: string | null
           id: string
           nome?: string | null
           preferencias_notificacao?: Json | null
           razao_social?: string | null
+          sincronizado_rfb?: boolean | null
+          situacao_cadastral?: string | null
           telefone?: string | null
           whatsapp?: string | null
         }
         Update: {
           ativo?: boolean | null
           cnpj?: string | null
+          data_abertura?: string | null
           data_criacao?: string | null
+          data_ultima_sincronizacao?: string | null
           email?: string | null
+          endereco?: string | null
           id?: string
           nome?: string | null
           preferencias_notificacao?: Json | null
           razao_social?: string | null
+          sincronizado_rfb?: boolean | null
+          situacao_cadastral?: string | null
           telefone?: string | null
           whatsapp?: string | null
         }
@@ -174,6 +189,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: 'faturas_cliente_id_fkey'
+            columns: ['cliente_id']
+            isOneToOne: false
+            referencedRelation: 'clientes'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      historico_clientes: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          dados_antigos: Json | null
+          dados_novos: Json | null
+          data_sincronizacao: string
+          id: string
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          dados_antigos?: Json | null
+          dados_novos?: Json | null
+          data_sincronizacao?: string
+          id?: string
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          dados_antigos?: Json | null
+          dados_novos?: Json | null
+          data_sincronizacao?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'historico_clientes_cliente_id_fkey'
             columns: ['cliente_id']
             isOneToOne: false
             referencedRelation: 'clientes'
@@ -511,6 +561,11 @@ export const Constants = {
 //   ativo: boolean (nullable, default: true)
 //   data_criacao: timestamp with time zone (nullable, default: now())
 //   preferencias_notificacao: jsonb (nullable, default: '{"sms": false, "email": true, "whatsapp": false}'::jsonb)
+//   sincronizado_rfb: boolean (nullable, default: false)
+//   data_ultima_sincronizacao: timestamp with time zone (nullable)
+//   situacao_cadastral: text (nullable)
+//   endereco: text (nullable)
+//   data_abertura: date (nullable)
 // Table: documentos
 //   id: uuid (not null, default: gen_random_uuid())
 //   cliente_id: uuid (nullable)
@@ -544,6 +599,13 @@ export const Constants = {
 //   data_pagamento: timestamp with time zone (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
 //   updated_at: timestamp with time zone (not null, default: now())
+// Table: historico_clientes
+//   id: uuid (not null, default: gen_random_uuid())
+//   cliente_id: uuid (not null)
+//   data_sincronizacao: timestamp with time zone (not null, default: now())
+//   dados_antigos: jsonb (nullable)
+//   dados_novos: jsonb (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: notificacoes
 //   id: uuid (not null, default: gen_random_uuid())
 //   cliente_id: uuid (nullable)
@@ -602,6 +664,9 @@ export const Constants = {
 // Table: faturas
 //   FOREIGN KEY faturas_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
 //   PRIMARY KEY faturas_pkey: PRIMARY KEY (id)
+// Table: historico_clientes
+//   FOREIGN KEY historico_clientes_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+//   PRIMARY KEY historico_clientes_pkey: PRIMARY KEY (id)
 // Table: notificacoes
 //   FOREIGN KEY notificacoes_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
 //   PRIMARY KEY notificacoes_pkey: PRIMARY KEY (id)
@@ -649,6 +714,11 @@ export const Constants = {
 // Table: faturas
 //   Policy "authenticated_select_faturas" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: (auth.uid() = cliente_id)
+// Table: historico_clientes
+//   Policy "authenticated_admin_select_historico" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.is_admin = true))))
+//   Policy "authenticated_insert_historico" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.is_admin = true))))
 // Table: notificacoes
 //   Policy "authenticated_delete_notificacoes" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: (auth.uid() = cliente_id)
