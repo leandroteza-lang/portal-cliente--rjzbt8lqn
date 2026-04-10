@@ -4,7 +4,8 @@
     "send-whatsapp": 2,
     "extract-pdf-data": 1,
     "fetch-google-drive-pdfs": 1,
-    "fetch-rfb-data": 1,
-    "update-user-password": 1
+    "fetch-rfb-data": 2,
+    "update-user-password": 1,
+    "admin-create-user": 1
   }
 }
