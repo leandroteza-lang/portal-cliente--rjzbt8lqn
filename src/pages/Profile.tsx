@@ -18,40 +18,36 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { LogOut, Building2, User, AlertCircle, Edit2 } from 'lucide-react'
 
-type Profile = {
+type Cliente = {
   id: string
-  full_name: string | null
-  document_number: string | null
-  company_name: string | null
+  nome: string | null
+  cnpj: string | null
+  razao_social: string | null
   email: string | null
-  phone: string | null
+  telefone: string | null
   whatsapp: string | null
-  accountant_name: string | null
-  accountant_email: string | null
-  accountant_phone: string | null
-  notify_email: boolean
-  notify_whatsapp: boolean
-  notify_sms: boolean
+  preferencias_notificacao: {
+    email: boolean
+    whatsapp: boolean
+    sms: boolean
+  } | null
 }
 
 export default function Profile() {
   const { session, signOut } = useAuth()
   const { toast } = useToast()
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const [cliente, setCliente] = useState<Cliente | null>(null)
   const [loading, setLoading] = useState(true)
-  const [editData, setEditData] = useState<Partial<Profile>>({})
+  const [editData, setEditData] = useState<Partial<Cliente>>({})
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   const fetchData = async () => {
     if (!session?.user?.id) return
-    const { data } = await (supabase as any)
-      .from('profiles')
-      .select('*')
-      .eq('id', session.user.id)
-      .single()
+    const { data } = await supabase.from('clientes').select('*').eq('id', session.user.id).single()
 
     if (data) {
-      setProfile(data)
+      const prefs = data.preferencias_notificacao || { email: true, whatsapp: false, sms: false }
+      setCliente({ ...data, preferencias_notificacao: prefs as any })
       setEditData(data)
     }
     setLoading(false)
@@ -61,10 +57,6 @@ export default function Profile() {
     fetchData()
   }, [session])
 
-  const handleLogout = async () => {
-    await signOut()
-  }
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditData((prev) => ({ ...prev, [e.target.id]: e.target.value }))
   }
@@ -73,22 +65,17 @@ export default function Profile() {
     e.preventDefault()
     if (!session?.user?.id) return
 
-    if (!editData.full_name || !editData.email) {
+    if (!editData.nome || !editData.email) {
       toast({ title: 'Nome e E-mail são obrigatórios', variant: 'destructive' })
       return
     }
 
-    if (!/^\S+@\S+\.\S+$/.test(editData.email)) {
-      toast({ title: 'E-mail inválido', variant: 'destructive' })
-      return
-    }
-
-    const { error } = await (supabase as any)
-      .from('profiles')
+    const { error } = await supabase
+      .from('clientes')
       .update({
-        full_name: editData.full_name,
+        nome: editData.nome,
         email: editData.email,
-        phone: editData.phone,
+        telefone: editData.telefone,
         whatsapp: editData.whatsapp,
       })
       .eq('id', session.user.id)
@@ -102,13 +89,15 @@ export default function Profile() {
     }
   }
 
-  const handleToggle = async (field: keyof Profile, value: boolean) => {
-    if (!session?.user?.id) return
-    setProfile((prev) => (prev ? { ...prev, [field]: value } : null))
+  const handleToggle = async (field: 'email' | 'whatsapp' | 'sms', value: boolean) => {
+    if (!session?.user?.id || !cliente) return
+    const novasPrefs = { ...(cliente.preferencias_notificacao || {}), [field]: value }
 
-    const { error } = await (supabase as any)
-      .from('profiles')
-      .update({ [field]: value })
+    setCliente({ ...cliente, preferencias_notificacao: novasPrefs as any })
+
+    const { error } = await supabase
+      .from('clientes')
+      .update({ preferencias_notificacao: novasPrefs as any })
       .eq('id', session.user.id)
 
     if (error) {
@@ -125,6 +114,8 @@ export default function Profile() {
     )
   }
 
+  const prefs = cliente?.preferencias_notificacao || { email: true, whatsapp: false, sms: false }
+
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-10 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -135,7 +126,6 @@ export default function Profile() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        {/* Coluna 1: Informações do Cliente */}
         <div className="md:col-span-2 space-y-6">
           <Card className="bg-[#FFFFFF] border-gray-200 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100">
@@ -157,48 +147,48 @@ export default function Profile() {
                   <Label className="text-[#6B7280]">Nome</Label>
                   <Input
                     readOnly
-                    value={profile?.full_name || ''}
-                    className="bg-gray-50 text-gray-900 border-gray-200 focus-visible:ring-0 cursor-default"
+                    value={cliente?.nome || ''}
+                    className="bg-gray-50 border-gray-200"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-[#6B7280]">E-mail</Label>
                   <Input
                     readOnly
-                    value={profile?.email || ''}
-                    className="bg-gray-50 text-gray-900 border-gray-200 focus-visible:ring-0 cursor-default"
+                    value={cliente?.email || ''}
+                    className="bg-gray-50 border-gray-200"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-[#6B7280]">CNPJ / CPF</Label>
                   <Input
                     readOnly
-                    value={profile?.document_number || ''}
-                    className="bg-gray-50 text-gray-900 border-gray-200 focus-visible:ring-0 cursor-default"
+                    value={cliente?.cnpj || ''}
+                    className="bg-gray-50 border-gray-200"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-[#6B7280]">Razão Social</Label>
                   <Input
                     readOnly
-                    value={profile?.company_name || ''}
-                    className="bg-gray-50 text-gray-900 border-gray-200 focus-visible:ring-0 cursor-default"
+                    value={cliente?.razao_social || ''}
+                    className="bg-gray-50 border-gray-200"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-[#6B7280]">Telefone</Label>
                   <Input
                     readOnly
-                    value={profile?.phone || ''}
-                    className="bg-gray-50 text-gray-900 border-gray-200 focus-visible:ring-0 cursor-default"
+                    value={cliente?.telefone || ''}
+                    className="bg-gray-50 border-gray-200"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-[#6B7280]">WhatsApp</Label>
                   <Input
                     readOnly
-                    value={profile?.whatsapp || ''}
-                    className="bg-gray-50 text-gray-900 border-gray-200 focus-visible:ring-0 cursor-default"
+                    value={cliente?.whatsapp || ''}
+                    className="bg-gray-50 border-gray-200"
                   />
                 </div>
               </div>
@@ -206,7 +196,6 @@ export default function Profile() {
           </Card>
         </div>
 
-        {/* Coluna 2: Notificações e Contador */}
         <div className="space-y-6">
           <Card className="bg-[#FFFFFF] border-gray-200 shadow-sm">
             <CardHeader className="pb-4 border-b border-gray-100">
@@ -220,10 +209,7 @@ export default function Profile() {
                   <Label className="text-gray-900 font-medium">E-mail</Label>
                   <p className="text-xs text-[#6B7280]">Receber avisos no e-mail</p>
                 </div>
-                <Switch
-                  checked={profile?.notify_email ?? false}
-                  onCheckedChange={(v) => handleToggle('notify_email', v)}
-                />
+                <Switch checked={prefs.email} onCheckedChange={(v) => handleToggle('email', v)} />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -232,8 +218,8 @@ export default function Profile() {
                   <p className="text-xs text-[#6B7280]">Mensagens rápidas</p>
                 </div>
                 <Switch
-                  checked={profile?.notify_whatsapp ?? false}
-                  onCheckedChange={(v) => handleToggle('notify_whatsapp', v)}
+                  checked={prefs.whatsapp}
+                  onCheckedChange={(v) => handleToggle('whatsapp', v)}
                 />
               </div>
               <Separator />
@@ -242,10 +228,7 @@ export default function Profile() {
                   <Label className="text-gray-900 font-medium">SMS</Label>
                   <p className="text-xs text-[#6B7280]">Avisos via texto</p>
                 </div>
-                <Switch
-                  checked={profile?.notify_sms ?? false}
-                  onCheckedChange={(v) => handleToggle('notify_sms', v)}
-                />
+                <Switch checked={prefs.sms} onCheckedChange={(v) => handleToggle('sms', v)} />
               </div>
             </CardContent>
           </Card>
@@ -253,27 +236,23 @@ export default function Profile() {
           <Card className="bg-[#FFFFFF] border-gray-200 shadow-sm">
             <CardHeader className="pb-4 border-b border-gray-100">
               <CardTitle className="text-[#2563EB] flex items-center gap-2 text-lg">
-                <User className="h-5 w-5" /> Dados do Contador Responsável
+                <User className="h-5 w-5" /> Dados do Contador
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
               <div className="space-y-1.5">
                 <Label className="text-[#6B7280] text-xs uppercase tracking-wider">Nome</Label>
-                <p className="text-sm font-medium text-gray-900">
-                  {profile?.accountant_name || 'Equipe COSTA'}
-                </p>
+                <p className="text-sm font-medium text-gray-900">Equipe COSTA</p>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-[#6B7280] text-xs uppercase tracking-wider">E-mail</Label>
                 <p className="text-sm font-medium text-gray-900 break-all">
-                  {profile?.accountant_email || 'contato@costaassessoria.com.br'}
+                  contato@costaassessoria.com.br
                 </p>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-[#6B7280] text-xs uppercase tracking-wider">Telefone</Label>
-                <p className="text-sm font-medium text-gray-900">
-                  {profile?.accountant_phone || '(11) 9999-9999'}
-                </p>
+                <p className="text-sm font-medium text-gray-900">(11) 9999-9999</p>
               </div>
             </CardContent>
           </Card>
@@ -283,7 +262,7 @@ export default function Profile() {
       <div className="flex justify-center pt-10 border-t mt-10">
         <Button
           variant="outline"
-          onClick={handleLogout}
+          onClick={() => signOut()}
           className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 w-full sm:w-auto px-12 py-6 text-base font-medium"
         >
           <LogOut className="mr-2 h-5 w-5" /> Logout
@@ -296,20 +275,15 @@ export default function Profile() {
             <DialogHeader>
               <DialogTitle className="text-[#2563EB]">Editar Perfil</DialogTitle>
               <DialogDescription className="text-[#6B7280]">
-                Atualize as informações de contato do seu perfil.
+                Atualize suas informações.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="full_name" className="text-gray-900">
+                <Label htmlFor="nome" className="text-gray-900">
                   Nome <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="full_name"
-                  value={editData.full_name || ''}
-                  onChange={handleChange}
-                  placeholder="Seu nome completo"
-                />
+                <Input id="nome" value={editData.nome || ''} onChange={handleChange} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email" className="text-gray-900">
@@ -320,43 +294,27 @@ export default function Profile() {
                   type="email"
                   value={editData.email || ''}
                   onChange={handleChange}
-                  placeholder="seu@email.com"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="phone" className="text-gray-900">
+                <Label htmlFor="telefone" className="text-gray-900">
                   Telefone
                 </Label>
-                <Input
-                  id="phone"
-                  value={editData.phone || ''}
-                  onChange={handleChange}
-                  placeholder="(00) 0000-0000"
-                />
+                <Input id="telefone" value={editData.telefone || ''} onChange={handleChange} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="whatsapp" className="text-gray-900">
                   WhatsApp
                 </Label>
-                <Input
-                  id="whatsapp"
-                  value={editData.whatsapp || ''}
-                  onChange={handleChange}
-                  placeholder="(00) 90000-0000"
-                />
+                <Input id="whatsapp" value={editData.whatsapp || ''} onChange={handleChange} />
               </div>
             </div>
             <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setIsEditDialogOpen(false)}
-                className="text-[#6B7280]"
-              >
+              <Button type="button" variant="ghost" onClick={() => setIsEditDialogOpen(false)}>
                 Cancelar
               </Button>
               <Button type="submit" className="bg-[#2563EB] hover:bg-blue-700 text-white">
-                Salvar alterações
+                Salvar
               </Button>
             </DialogFooter>
           </form>

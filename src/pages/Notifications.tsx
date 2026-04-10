@@ -1,243 +1,196 @@
-import { useEffect, useState } from 'react'
-import { Bell, CheckCircle, AlertTriangle, FileText, Trash2, Check } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 import { supabase } from '@/lib/supabase/client'
+import { useToast } from '@/hooks/use-toast'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Bell, Calendar, FileText, Info, Check, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { toast } from 'sonner'
-import { Database } from '@/lib/supabase/types'
+import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
-type Notification = Database['public']['Tables']['notificacoes']['Row']
+type Notificacao = {
+  id: string
+  tipo: string
+  mensagem: string
+  lido: boolean
+  data_criacao: string
+}
 
 export default function Notifications() {
-  const { user } = useAuth()
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const { session } = useAuth()
+  const { toast } = useToast()
+  const [notificacoes, setNotificacoes] = useState<Notificacao[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('todos')
+  const [filter, setFilter] = useState('Todos')
 
-  const fetchNotifications = async () => {
-    if (!user) return
+  const fetchNotificacoes = async () => {
+    if (!session?.user?.id) return
     setLoading(true)
     const { data, error } = await supabase
       .from('notificacoes')
       .select('*')
-      .eq('cliente_id', user.id)
+      .eq('cliente_id', session.user.id)
       .order('data_criacao', { ascending: false })
 
     if (error) {
-      toast.error('Erro ao carregar notificações')
+      toast({ title: 'Erro ao carregar notificações', variant: 'destructive' })
     } else {
-      setNotifications(data || [])
+      setNotificacoes(data as Notificacao[])
     }
     setLoading(false)
   }
 
   useEffect(() => {
-    fetchNotifications()
-  }, [user])
+    fetchNotificacoes()
+  }, [session])
 
-  const notifySidebar = () => {
-    window.dispatchEvent(new Event('notifications-updated'))
-  }
-
-  const markAsRead = async (id: string) => {
+  const handleMarkAsRead = async (id: string) => {
     const { error } = await supabase.from('notificacoes').update({ lido: true }).eq('id', id)
 
-    if (error) {
-      toast.error('Erro ao marcar como lida')
-    } else {
-      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, lido: true } : n)))
-      notifySidebar()
+    if (!error) {
+      setNotificacoes((prev) => prev.map((n) => (n.id === id ? { ...n, lido: true } : n)))
     }
   }
 
-  const deleteNotification = async (id: string) => {
+  const handleDelete = async (id: string) => {
     const { error } = await supabase.from('notificacoes').delete().eq('id', id)
 
-    if (error) {
-      toast.error('Erro ao excluir notificação')
-    } else {
-      setNotifications((prev) => prev.filter((n) => n.id !== id))
-      toast.success('Notificação excluída')
-      notifySidebar()
+    if (!error) {
+      setNotificacoes((prev) => prev.filter((n) => n.id !== id))
+      toast({ title: 'Notificação excluída' })
     }
   }
 
-  const getNotificationIcon = (tipo: string) => {
-    const t = tipo.toLowerCase()
-    if (t.includes('vencimento') || t.includes('fatura'))
-      return <AlertTriangle className="h-5 w-5 text-amber-500" />
-    if (t.includes('documento')) return <FileText className="h-5 w-5 text-blue-500" />
-    if (t.includes('sucesso')) return <CheckCircle className="h-5 w-5 text-emerald-500" />
-    return <Bell className="h-5 w-5 text-primary" />
-  }
-
-  const getNotificationTitle = (tipo: string) => {
-    const t = tipo.toLowerCase()
-    if (t.includes('vencimento') || t.includes('fatura')) return 'Aviso de Vencimento'
-    if (t.includes('documento')) return 'Novo Documento'
-    if (t.includes('aviso')) return 'Aviso do Escritório'
-    return tipo.charAt(0).toUpperCase() + tipo.slice(1)
-  }
-
-  const filteredNotifications = notifications.filter((n) => {
-    const t = n.tipo.toLowerCase()
-    if (filter === 'vencimentos') return t.includes('vencimento') || t.includes('fatura')
-    if (filter === 'documentos') return t.includes('documento')
-    if (filter === 'avisos')
-      return (
-        t.includes('aviso') ||
-        (!t.includes('vencimento') && !t.includes('fatura') && !t.includes('documento'))
-      )
+  const filteredNotificacoes = notificacoes.filter((n) => {
+    if (filter === 'Todos') return true
+    if (filter === 'Vencimentos') return n.tipo === 'Vencimento'
+    if (filter === 'Novos Documentos') return n.tipo === 'Documento'
+    if (filter === 'Avisos do Escritório') return n.tipo === 'Aviso'
     return true
   })
 
-  const unreadCount = notifications.filter((n) => !n.lido).length
+  const getIcon = (tipo: string) => {
+    switch (tipo) {
+      case 'Vencimento':
+        return <Calendar className="h-5 w-5 text-amber-500" />
+      case 'Documento':
+        return <FileText className="h-5 w-5 text-blue-500" />
+      default:
+        return <Info className="h-5 w-5 text-emerald-500" />
+    }
+  }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            Notificações
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Fique por dentro das atualizações e alertas da sua conta.
-          </p>
-        </div>
-        {unreadCount > 0 && (
-          <Badge
-            variant="secondary"
-            className="px-3 py-1.5 text-sm bg-primary/10 text-primary hover:bg-primary/20 border-0"
-          >
-            {unreadCount} não {unreadCount === 1 ? 'lida' : 'lidas'}
-          </Badge>
-        )}
+    <div className="space-y-6 max-w-4xl mx-auto pb-10 animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <Bell className="h-6 w-6 text-primary" />
+          Central de Notificações
+        </h1>
+        <p className="text-slate-500 mt-1">Gerencie seus avisos e alertas importantes.</p>
       </div>
 
-      <Tabs defaultValue="todos" value={filter} onValueChange={setFilter} className="w-full">
-        <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:flex sm:flex-wrap h-auto bg-slate-100/50 dark:bg-slate-800/50">
-          <TabsTrigger value="todos" className="py-2.5">
-            Todas
-          </TabsTrigger>
-          <TabsTrigger value="vencimentos" className="py-2.5">
-            Vencimentos
-          </TabsTrigger>
-          <TabsTrigger value="documentos" className="py-2.5">
-            Documentos
-          </TabsTrigger>
-          <TabsTrigger value="avisos" className="py-2.5">
-            Avisos
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex flex-wrap gap-2">
+        {['Todos', 'Vencimentos', 'Novos Documentos', 'Avisos do Escritório'].map((f) => (
+          <Button
+            key={f}
+            variant={filter === f ? 'default' : 'outline'}
+            onClick={() => setFilter(f)}
+            className="rounded-full"
+            size="sm"
+          >
+            {f}
+          </Button>
+        ))}
+      </div>
 
-      <Card className="border-slate-200/60 dark:border-slate-800/60 shadow-sm overflow-hidden bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
-        <CardHeader className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/80 py-4">
-          <CardTitle className="text-lg flex items-center gap-2 text-slate-800 dark:text-slate-200">
-            <Bell className="h-5 w-5 text-slate-500" />
-            Central de Avisos
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="p-4 md:p-6 flex gap-4">
-                  <Skeleton className="h-10 w-10 rounded-full shrink-0" />
-                  <div className="flex-1 space-y-2.5">
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-3 w-full" />
-                    <Skeleton className="h-3 w-4/5" />
-                  </div>
+      <div className="space-y-3">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="shadow-sm">
+              <CardContent className="p-4 flex gap-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="h-3 w-3/4" />
                 </div>
-              ))
-            ) : filteredNotifications.length === 0 ? (
-              <div className="p-12 text-center flex flex-col items-center justify-center animate-fade-in">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800/50 text-slate-400 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle className="h-8 w-8" />
-                </div>
-                <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
-                  Tudo limpo por aqui!
-                </h3>
-                <p className="text-slate-500 max-w-sm mt-2">
-                  Você não tem nenhuma notificação{' '}
-                  {filter !== 'todos' ? 'nesta categoria' : 'no momento'}.
-                </p>
-              </div>
-            ) : (
-              filteredNotifications.map((notif) => (
-                <div
-                  key={notif.id}
-                  className={`p-4 md:p-6 flex gap-4 transition-all duration-200 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 group ${!notif.lido ? 'bg-primary/[0.03] dark:bg-primary/5' : ''}`}
-                >
-                  <div className="shrink-0 mt-1">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${!notif.lido ? 'bg-white dark:bg-slate-950 shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'bg-slate-100 dark:bg-slate-800/80'}`}
-                    >
-                      {getNotificationIcon(notif.tipo)}
-                    </div>
-                  </div>
-                  <div className="flex-1 space-y-1.5 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
-                      <p
-                        className={`text-sm font-semibold truncate ${!notif.lido ? 'text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300'}`}
-                      >
-                        {getNotificationTitle(notif.tipo)}
-                      </p>
-                      <span className="text-xs text-slate-500 whitespace-nowrap font-medium">
-                        {notif.data_criacao
-                          ? format(new Date(notif.data_criacao), "dd 'de' MMM, HH:mm", {
-                              locale: ptBR,
-                            })
-                          : ''}
-                      </span>
-                    </div>
-                    <p
-                      className={`text-sm leading-relaxed ${!notif.lido ? 'text-slate-700 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}
-                    >
-                      {notif.mensagem}
-                    </p>
-
-                    <div className="flex items-center gap-2 pt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {!notif.lido && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2.5 text-primary hover:text-primary hover:bg-primary/10"
-                          onClick={() => markAsRead(notif.id)}
-                        >
-                          <Check className="h-4 w-4 mr-1.5" />
-                          Marcar como lida
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2.5 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-                        onClick={() => deleteNotification(notif.id)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1.5" />
-                        Excluir
-                      </Button>
-                    </div>
-                  </div>
-                  {!notif.lido && (
-                    <div className="shrink-0 self-center sm:self-start mt-2 sm:mt-0">
-                      <div className="w-2.5 h-2.5 bg-primary rounded-full shadow-sm animate-pulse"></div>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
+              </CardContent>
+            </Card>
+          ))
+        ) : filteredNotificacoes.length === 0 ? (
+          <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-xl border border-dashed">
+            <Bell className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+            <p className="text-slate-500 font-medium">Nenhuma notificação encontrada.</p>
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          filteredNotificacoes.map((notif) => (
+            <Card
+              key={notif.id}
+              className={cn(
+                'shadow-sm transition-all hover:border-slate-300',
+                !notif.lido ? 'bg-primary/5 border-primary/20' : 'bg-white dark:bg-slate-900',
+              )}
+            >
+              <CardContent className="p-4 flex items-start sm:items-center gap-4 flex-col sm:flex-row">
+                <div
+                  className={cn(
+                    'p-2.5 rounded-full shrink-0',
+                    !notif.lido ? 'bg-white' : 'bg-slate-100',
+                  )}
+                >
+                  {getIcon(notif.tipo)}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="outline" className="text-xs bg-white">
+                      {notif.tipo}
+                    </Badge>
+                    <span className="text-xs text-slate-500">
+                      {format(new Date(notif.data_criacao), "dd 'de' MMM 'às' HH:mm", {
+                        locale: ptBR,
+                      })}
+                    </span>
+                    {!notif.lido && <span className="h-2 w-2 rounded-full bg-primary" />}
+                  </div>
+                  <p
+                    className={cn(
+                      'text-sm',
+                      !notif.lido
+                        ? 'font-semibold text-slate-800 dark:text-slate-200'
+                        : 'text-slate-600 dark:text-slate-400',
+                    )}
+                  >
+                    {notif.mensagem}
+                  </p>
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto justify-end">
+                  {!notif.lido && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleMarkAsRead(notif.id)}
+                      className="text-primary hover:text-primary hover:bg-primary/10"
+                    >
+                      <Check className="h-4 w-4 mr-1" /> Lido
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(notif.id)}
+                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Excluir
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   )
 }

@@ -12,7 +12,11 @@ import Invoices from './pages/Invoices'
 import Notifications from './pages/Notifications'
 import NotFound from './pages/NotFound'
 import Login from './pages/Login'
+import AdminLayout from './components/AdminLayout'
+import AdminDashboard from './pages/admin/AdminDashboard'
 import { AuthProvider, useAuth } from './hooks/use-auth'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase/client'
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="flex flex-col items-center justify-center h-[50vh] text-center max-w-md mx-auto animate-fade-in-up">
@@ -29,8 +33,24 @@ const Placeholder = ({ title }: { title: string }) => (
 
 const ProtectedRoute = () => {
   const { session, loading } = useAuth()
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
 
-  if (loading) {
+  useEffect(() => {
+    if (session?.user?.id) {
+      supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single()
+        .then(({ data }) => {
+          setIsAdmin(!!data?.is_admin)
+        })
+    } else if (!loading) {
+      setIsAdmin(false)
+    }
+  }, [session, loading])
+
+  if (loading || isAdmin === null) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-900">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -40,7 +60,42 @@ const ProtectedRoute = () => {
 
   if (!session) return <Navigate to="/login" replace />
 
+  if (isAdmin) return <Navigate to="/admin" replace />
+
   return <Layout />
+}
+
+const AdminRoute = () => {
+  const { session, loading } = useAuth()
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single()
+        .then(({ data }) => {
+          setIsAdmin(!!data?.is_admin)
+        })
+    } else if (!loading) {
+      setIsAdmin(false)
+    }
+  }, [session, loading])
+
+  if (loading || isAdmin === null) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+      </div>
+    )
+  }
+
+  if (!session) return <Navigate to="/login" replace />
+  if (!isAdmin) return <Navigate to="/" replace />
+
+  return <AdminLayout />
 }
 
 const AppRoutes = () => (
@@ -54,6 +109,14 @@ const AppRoutes = () => (
       <Route path="/faturas" element={<Invoices />} />
       <Route path="/notificacoes" element={<Notifications />} />
       <Route path="/perfil" element={<Profile />} />
+    </Route>
+    <Route path="/admin" element={<AdminRoute />}>
+      <Route index element={<AdminDashboard />} />
+      <Route path="clientes" element={<Placeholder title="Gestão de Clientes" />} />
+      <Route path="documentos" element={<Placeholder title="Gestão de Documentos" />} />
+      <Route path="vencimentos" element={<Placeholder title="Controle de Vencimentos" />} />
+      <Route path="notificacoes" element={<Placeholder title="Avisos do Escritório" />} />
+      <Route path="configuracoes" element={<Placeholder title="Configurações do Painel" />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
