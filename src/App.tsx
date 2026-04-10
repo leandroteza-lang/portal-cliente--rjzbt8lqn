@@ -14,6 +14,10 @@ import NotFound from './pages/NotFound'
 import Login from './pages/Login'
 import AdminLayout from './components/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminClientes from './pages/admin/AdminClientes'
+import AdminDocumentos from './pages/admin/AdminDocumentos'
+import AdminVencimentos from './pages/admin/AdminVencimentos'
+import AdminNotificacoes from './pages/admin/AdminNotificacoes'
 import { AuthProvider, useAuth } from './hooks/use-auth'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
@@ -112,10 +116,10 @@ const AppRoutes = () => (
     </Route>
     <Route path="/admin" element={<AdminRoute />}>
       <Route index element={<AdminDashboard />} />
-      <Route path="clientes" element={<Placeholder title="Gestão de Clientes" />} />
-      <Route path="documentos" element={<Placeholder title="Gestão de Documentos" />} />
-      <Route path="vencimentos" element={<Placeholder title="Controle de Vencimentos" />} />
-      <Route path="notificacoes" element={<Placeholder title="Avisos do Escritório" />} />
+      <Route path="clientes" element={<AdminClientes />} />
+      <Route path="documentos" element={<AdminDocumentos />} />
+      <Route path="vencimentos" element={<AdminVencimentos />} />
+      <Route path="notificacoes" element={<AdminNotificacoes />} />
       <Route path="configuracoes" element={<Placeholder title="Configurações do Painel" />} />
     </Route>
     <Route path="*" element={<NotFound />} />
