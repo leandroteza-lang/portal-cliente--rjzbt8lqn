@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { LogOut, Building2, User, AlertCircle, Edit2 } from 'lucide-react'
+import { LogOut, Building2, User, AlertCircle, Edit2, Key } from 'lucide-react'
 
 type Cliente = {
   id: string
@@ -40,6 +40,55 @@ export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [editData, setEditData] = useState<Partial<Cliente>>({})
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+
+  const validatePasswordStrength = (pwd: string) => {
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&.])[A-Za-z\d@$!%*#?&.]{8,}$/
+    return regex.test(pwd)
+  }
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!session?.user?.id) return
+
+    if (newPassword !== confirmPassword) {
+      toast({ title: 'As senhas não coincidem', variant: 'destructive' })
+      return
+    }
+
+    if (!validatePasswordStrength(newPassword)) {
+      toast({
+        title: 'Senha fraca',
+        description:
+          'A senha deve ter no mínimo 8 caracteres, contendo letras, números e pelo menos um caractere especial.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsChangingPassword(true)
+
+    const { data, error } = await supabase.functions.invoke('update-user-password', {
+      body: { action: 'client-update', userId: session.user.id, oldPassword, newPassword },
+    })
+
+    if (error || !data?.success) {
+      toast({
+        title: 'Erro ao alterar senha',
+        description: data?.error || error?.message || 'Verifique se a senha atual está correta.',
+        variant: 'destructive',
+      })
+    } else {
+      toast({ title: 'Senha alterada com sucesso!' })
+      setOldPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    }
+    setIsChangingPassword(false)
+  }
 
   const fetchData = async () => {
     if (!session?.user?.id) return
@@ -197,6 +246,58 @@ export default function Profile() {
         </div>
 
         <div className="space-y-6">
+          <Card className="bg-[#FFFFFF] border-gray-200 shadow-sm">
+            <CardHeader className="pb-4 border-b border-gray-100">
+              <CardTitle className="text-[#2563EB] flex items-center gap-2 text-lg">
+                <Key className="h-5 w-5" /> Segurança da Conta
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-[#6B7280]">Senha Atual</Label>
+                  <Input
+                    type="password"
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    required
+                    className="bg-gray-50"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[#6B7280]">Nova Senha</Label>
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    className="bg-gray-50"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Mín. 8 caracteres, com letras, números e caractere especial.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[#6B7280]">Confirmar Nova Senha</Label>
+                  <Input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="bg-gray-50"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-[#2563EB] hover:bg-blue-700 text-white mt-2"
+                  disabled={isChangingPassword || !oldPassword || !newPassword || !confirmPassword}
+                >
+                  {isChangingPassword ? 'Alterando...' : 'Alterar Senha'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
           <Card className="bg-[#FFFFFF] border-gray-200 shadow-sm">
             <CardHeader className="pb-4 border-b border-gray-100">
               <CardTitle className="text-[#2563EB] flex items-center gap-2 text-lg">

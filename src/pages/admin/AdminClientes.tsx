@@ -1,7 +1,19 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { Search, Plus, Edit, Trash2, Filter, RefreshCw, CheckCircle2 } from 'lucide-react'
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Filter,
+  RefreshCw,
+  CheckCircle2,
+  Key,
+  Copy,
+  Send,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table,
   TableBody,
@@ -54,6 +66,136 @@ export default function AdminClientes() {
   const [isFetchingRfb, setIsFetchingRfb] = useState(false)
   const [isDiffModalOpen, setIsDiffModalOpen] = useState(false)
   const [rfbDiffData, setRfbDiffData] = useState<any>(null)
+
+  const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false)
+  const [selectedClienteCredentials, setSelectedClienteCredentials] = useState<Cliente | null>(null)
+  const [newPassword, setNewPassword] = useState('')
+  const [credentialsHistory, setCredentialsHistory] = useState<any[]>([])
+  const [isProcessingPassword, setIsProcessingPassword] = useState(false)
+
+  const generatePassword = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*'
+    let pwd = ''
+    for (let i = 0; i < 12; i++) pwd += chars.charAt(Math.floor(Math.random() * chars.length))
+    return pwd
+  }
+
+  const loadCredentialsHistory = async (clienteId: string) => {
+    const { data } = await supabase
+      .from('historico_clientes')
+      .select('*')
+      .eq('cliente_id', clienteId)
+      .order('data_sincronizacao', { ascending: false })
+
+    if (data) {
+      const filtered = data.filter(
+        (d) =>
+          d.dados_novos &&
+          ((d.dados_novos as any).tipo === 'Senha Criada/Alterada' ||
+            (d.dados_novos as any).tipo === 'Envio de Credenciais' ||
+            (d.dados_novos as any).tipo === 'Senha Alterada pelo Cliente'),
+      )
+      setCredentialsHistory(filtered)
+    }
+  }
+
+  const sendCredentials = async (cliente: Cliente, tempPassword: string) => {
+    const mensagem = `Olá ${cliente.nome}! Suas credenciais de acesso ao Portal do Cliente foram geradas.\n\nE-mail: ${cliente.email}\nSenha: ${tempPassword}\nCNPJ/CPF: ${cliente.cnpj}\n\nAcesse o portal para conferir seus documentos e faturas.`
+    const assunto = 'Suas Credenciais de Acesso - Portal do Cliente'
+
+    let emailSent = false
+    let whatsappSent = false
+
+    if (cliente.email) {
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: { cliente_email: cliente.email, assunto, mensagem },
+      })
+      if (!error && data?.success) emailSent = true
+    }
+
+    if (cliente.whatsapp) {
+      const { data, error } = await supabase.functions.invoke('send-whatsapp', {
+        body: { cliente_whatsapp: cliente.whatsapp, mensagem },
+      })
+      if (!error && data?.success) whatsappSent = true
+    }
+
+    await supabase.from('historico_clientes').insert({
+      cliente_id: cliente.id,
+      dados_novos: {
+        tipo: 'Envio de Credenciais',
+        data: new Date().toISOString(),
+        email_enviado: emailSent,
+        whatsapp_enviado: whatsappSent,
+      },
+    })
+
+    return { emailSent, whatsappSent }
+  }
+
+  const handleSavePassword = async (send: boolean) => {
+    if (!selectedClienteCredentials || newPassword.length < 8) return
+
+    setIsProcessingPassword(true)
+
+    const { error } = await supabase.functions.invoke('update-user-password', {
+      body: { action: 'admin-update', userId: selectedClienteCredentials.id, newPassword },
+    })
+
+    if (error) {
+      toast.error('Erro ao atualizar senha: ' + error.message)
+      setIsProcessingPassword(false)
+      return
+    }
+
+    toast.success('Senha atualizada com sucesso!')
+
+    if (send) {
+      toast.info('Enviando credenciais...')
+      const { emailSent, whatsappSent } = await sendCredentials(
+        selectedClienteCredentials,
+        newPassword,
+      )
+      toast.success(
+        `Envio concluído! (Email: ${emailSent ? 'Sim' : 'Não'}, Whats: ${whatsappSent ? 'Sim' : 'Não'})`,
+      )
+    }
+
+    loadCredentialsHistory(selectedClienteCredentials.id)
+    setIsProcessingPassword(false)
+    setNewPassword('')
+  }
+
+  const handleResendCredentials = async (cliente: Cliente) => {
+    if (
+      !confirm(
+        `Deseja gerar uma nova senha aleatória e reenviar as credenciais para ${cliente.nome}?`,
+      )
+    )
+      return
+
+    const tempPassword = generatePassword()
+
+    const { error } = await supabase.functions.invoke('update-user-password', {
+      body: { action: 'admin-update', userId: cliente.id, newPassword: tempPassword },
+    })
+
+    if (error) {
+      toast.error('Erro ao atualizar senha: ' + error.message)
+      return
+    }
+
+    toast.info('Nova senha gerada. Enviando credenciais...')
+    const { emailSent, whatsappSent } = await sendCredentials(cliente, tempPassword)
+
+    if (emailSent || whatsappSent) {
+      toast.success(
+        `Credenciais enviadas com sucesso! (Email: ${emailSent ? 'Sim' : 'Não'}, Whats: ${whatsappSent ? 'Sim' : 'Não'})`,
+      )
+    } else {
+      toast.error('Não foi possível enviar as credenciais. Verifique o email/whatsapp do cliente.')
+    }
+  }
 
   const loadClientes = async () => {
     let query = supabase.from('clientes').select('*', { count: 'exact' })
@@ -302,7 +444,30 @@ export default function AdminClientes() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right whitespace-nowrap">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Credenciais e Senha"
+                        className="group hover:bg-emerald-100"
+                        onClick={() => {
+                          setSelectedClienteCredentials(c)
+                          setNewPassword('')
+                          loadCredentialsHistory(c.id)
+                          setIsCredentialsModalOpen(true)
+                        }}
+                      >
+                        <Key className="w-4 h-4 text-slate-500 group-hover:text-emerald-600 transition-transform group-hover:scale-110" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Gerar e Enviar Credenciais"
+                        className="group hover:bg-emerald-100"
+                        onClick={() => handleResendCredentials(c)}
+                      >
+                        <Send className="w-4 h-4 text-slate-500 group-hover:text-emerald-600 transition-transform group-hover:scale-110 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -529,6 +694,100 @@ export default function AdminClientes() {
               Atualizar com RFB
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCredentialsModalOpen} onOpenChange={setIsCredentialsModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Gerenciar Credenciais - {selectedClienteCredentials?.nome}</DialogTitle>
+          </DialogHeader>
+          <Tabs defaultValue="senha" className="w-full mt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="senha">Nova Senha e Envio</TabsTrigger>
+              <TabsTrigger value="historico">Histórico de Envios</TabsTrigger>
+            </TabsList>
+            <TabsContent value="senha" className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>Nova Senha (mínimo 8 caracteres)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Digite a nova senha ou gere uma aleatória"
+                    type="text"
+                  />
+                  <Button variant="outline" onClick={() => setNewPassword(generatePassword())}>
+                    Gerar Forte
+                  </Button>
+                </div>
+                {newPassword.length > 0 && newPassword.length < 8 && (
+                  <p className="text-xs text-red-500">A senha deve ter pelo menos 8 caracteres.</p>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(newPassword)
+                    toast.success('Senha copiada!')
+                  }}
+                  disabled={!newPassword}
+                >
+                  <Copy className="w-4 h-4 mr-2" /> Copiar Senha
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => handleSavePassword(false)}
+                  disabled={newPassword.length < 8 || isProcessingPassword}
+                >
+                  Apenas Salvar
+                </Button>
+                <Button
+                  onClick={() => handleSavePassword(true)}
+                  disabled={newPassword.length < 8 || isProcessingPassword}
+                  className="bg-emerald-500 hover:bg-emerald-600"
+                >
+                  <Send className="w-4 h-4 mr-2" /> Salvar e Enviar
+                </Button>
+              </div>
+            </TabsContent>
+            <TabsContent value="historico" className="pt-4">
+              {credentialsHistory.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-slate-500">
+                    Nenhum histórico de envio encontrado para este cliente.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {credentialsHistory.map((h) => (
+                    <div key={h.id} className="text-sm border-b border-slate-100 pb-3">
+                      <div className="font-medium text-slate-800">
+                        {(h.dados_novos as any)?.tipo || 'Ação'}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        {new Date(h.data_sincronizacao).toLocaleString('pt-BR')}
+                      </div>
+                      {(h.dados_novos as any)?.email_enviado !== undefined && (
+                        <div className="flex gap-4 text-xs text-slate-600 mt-2 bg-slate-50 p-2 rounded">
+                          <span>
+                            Email:{' '}
+                            {(h.dados_novos as any).email_enviado ? '✅ Enviado' : '❌ Falhou'}
+                          </span>
+                          <span>
+                            WhatsApp:{' '}
+                            {(h.dados_novos as any).whatsapp_enviado ? '✅ Enviado' : '❌ Falhou'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </div>
