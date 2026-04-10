@@ -2,6 +2,7 @@
   "_versions": {
     "send-email": 1,
     "send-whatsapp": 1,
-    "extract-pdf-data": 1
+    "extract-pdf-data": 1,
+    "fetch-google-drive-pdfs": 1
   }
 }
