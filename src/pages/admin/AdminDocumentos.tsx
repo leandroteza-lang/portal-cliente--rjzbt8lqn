@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { Search, Filter, Eye, Download, CheckCircle, Trash2 } from 'lucide-react'
+import { Search, Filter, Eye, Download, CheckCircle, Trash2, FileText } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   Table,
