@@ -5,6 +5,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import Layout from './components/Layout'
 import Index from './pages/Index'
 import Documents from './pages/Documents'
+import Upload from './pages/Upload'
 import Profile from './pages/Profile'
 import Taxes from './pages/Taxes'
 import NotFound from './pages/NotFound'
@@ -46,6 +47,7 @@ const AppRoutes = () => (
     <Route element={<ProtectedRoute />}>
       <Route path="/" element={<Index />} />
       <Route path="/documentos" element={<Documents />} />
+      <Route path="/upload" element={<Upload />} />
       <Route path="/impostos" element={<Taxes />} />
       <Route path="/faturas" element={<Placeholder title="Faturas e Boletos" />} />
       <Route path="/mensagens" element={<Placeholder title="Central de Mensagens" />} />

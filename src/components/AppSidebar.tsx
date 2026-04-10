@@ -1,5 +1,13 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, FileText, Landmark, Receipt, MessageSquare, User } from 'lucide-react'
+import {
+  LayoutDashboard,
+  FileText,
+  Landmark,
+  Receipt,
+  MessageSquare,
+  User,
+  UploadCloud,
+} from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +24,7 @@ import logoCosta from '@/assets/design-sem-nome-1-editado-6f8ca.png'
 const navItems = [
   { title: 'Visão Geral', url: '/', icon: LayoutDashboard },
   { title: 'Meus Documentos', url: '/documentos', icon: FileText },
+  { title: 'Novo Documento', url: '/upload', icon: UploadCloud },
   { title: 'Impostos', url: '/impostos', icon: Landmark },
   { title: 'Faturas', url: '/faturas', icon: Receipt },
   { title: 'Mensagens', url: '/mensagens', icon: MessageSquare },
