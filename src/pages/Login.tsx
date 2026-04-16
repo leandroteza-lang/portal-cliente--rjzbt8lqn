@@ -92,7 +92,13 @@ export default function Login() {
   const onLoginSubmit = async (values: z.infer<typeof loginSchema>) => {
     const { error } = await signIn(values.email, values.password)
     if (error) {
-      toast.error('Erro ao fazer login', { description: error.message })
+      if (error.message.includes('Email not confirmed')) {
+        toast.error('Erro ao fazer login', { description: 'Seu e-mail ainda não foi confirmado.' })
+      } else if (error.message.includes('Invalid login credentials')) {
+        toast.error('Erro ao fazer login', { description: 'E-mail ou senha incorretos.' })
+      } else {
+        toast.error('Erro ao fazer login', { description: error.message })
+      }
     } else {
       toast.success('Login realizado com sucesso!')
     }
@@ -108,8 +114,12 @@ export default function Login() {
     if (error) {
       toast.error('Erro ao criar conta', { description: error.message })
     } else {
-      toast.success('Conta criada com sucesso! Verifique seu e-mail para confirmar.')
-      setView('login')
+      toast.success('Conta criada com sucesso!')
+
+      const { error: loginError } = await signIn(values.email, values.password)
+      if (loginError) {
+        setView('login')
+      }
     }
   }
 
