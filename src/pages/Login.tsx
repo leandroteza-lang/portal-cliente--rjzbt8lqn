@@ -460,4 +460,9 @@ export default function Login() {
                 {forgotPasswordForm.formState.isSubmitting ? 'Enviando...' : 'Enviar Link'}
               </Button>
             </form>
-          </F
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
