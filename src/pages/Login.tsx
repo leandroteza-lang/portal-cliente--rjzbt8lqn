@@ -28,7 +28,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Calculator } from 'lucide-react'
 
 const loginSchema = z.object({
-  email: z.string().email('E-mail inválido'),
+  email: z.string().email('E-mail inválido').toLowerCase().trim(),
   password: z.string().min(1, 'A senha é obrigatória'),
 })
 
@@ -42,7 +42,7 @@ const registerSchema = z
         'CNPJ inválido (Ex: 00.000.000/0000-00)',
       ),
     companyName: z.string().min(3, 'Razão social deve ter no mínimo 3 caracteres'),
-    email: z.string().email('E-mail inválido'),
+    email: z.string().email('E-mail inválido').toLowerCase().trim(),
     phone: z.string().min(10, 'Telefone inválido'),
     password: z.string().min(8, 'A senha deve ter no mínimo 8 caracteres'),
     confirmPassword: z.string().min(8, 'A senha deve ter no mínimo 8 caracteres'),
@@ -54,7 +54,7 @@ const registerSchema = z
   })
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('E-mail inválido'),
+  email: z.string().email('E-mail inválido').toLowerCase().trim(),
 })
 
 export default function Login() {
