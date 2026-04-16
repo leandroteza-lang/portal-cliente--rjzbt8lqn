@@ -865,6 +865,18 @@ export const Constants = {
 //     USING: (auth.uid() = cliente_id)
 
 // --- DATABASE FUNCTIONS ---
+// FUNCTION auto_confirm_user()
+//   CREATE OR REPLACE FUNCTION public.auto_confirm_user()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   BEGIN
+//     NEW.email_confirmed_at = COALESCE(NEW.email_confirmed_at, NOW());
+//     RETURN NEW;
+//   END;
+//   $function$
+//
 // FUNCTION handle_new_document()
 //   CREATE OR REPLACE FUNCTION public.handle_new_document()
 //    RETURNS trigger

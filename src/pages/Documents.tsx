@@ -37,8 +37,10 @@ import {
 import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { fetchDocuments, deleteDocument, type Document } from '@/services/documents'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function Documents() {
+  const { user } = useAuth()
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -49,14 +51,23 @@ export default function Documents() {
   const pageSize = 10
 
   useEffect(() => {
-    loadDocuments()
+    if (user) {
+      loadDocuments()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, categoryFilter, searchTerm])
+  }, [page, categoryFilter, searchTerm, user])
 
   const loadDocuments = async () => {
+    if (!user) return
     try {
       setLoading(true)
-      const { data, count } = await fetchDocuments(page, pageSize, searchTerm, categoryFilter)
+      const { data, count } = await fetchDocuments(
+        page,
+        pageSize,
+        searchTerm,
+        categoryFilter,
+        user.id,
+      )
       setDocuments(data)
       setTotal(count)
     } catch (error) {

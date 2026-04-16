@@ -57,10 +57,10 @@ export default function Upload() {
   const fetchRecentUploads = async () => {
     if (!user) return
     const { data, error } = await supabase
-      .from('documents')
+      .from('documentos')
       .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+      .eq('cliente_id', user.id)
+      .order('data_upload', { ascending: false })
       .limit(5)
 
     if (!error && data) {
@@ -133,15 +133,14 @@ export default function Upload() {
 
     try {
       const inserts = files.map((file) => ({
-        user_id: user.id,
-        name: file.name,
-        category: category,
+        cliente_id: user.id,
+        nome: file.name,
+        categoria: category,
         status: 'Pendente',
-        size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-        file_url: null, // Mocking URL real storage integration
+        arquivo_url: null, // Mocking URL real storage integration
       }))
 
-      const { error } = await supabase.from('documents').insert(inserts)
+      const { error } = await supabase.from('documentos').insert(inserts)
 
       if (error) throw error
 
@@ -339,17 +338,18 @@ export default function Upload() {
                         <FileText className="h-4 w-4" />
                       </div>
                       <div className="overflow-hidden w-full">
-                        <p className="text-sm font-medium truncate" title={doc.name}>
-                          {doc.name}
+                        <p className="text-sm font-medium truncate" title={doc.nome}>
+                          {doc.nome}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[11px] font-medium px-1.5 py-0.5 rounded-sm bg-secondary text-secondary-foreground whitespace-nowrap">
-                            {doc.category}
+                            {doc.categoria}
                           </span>
                           <span className="text-xs text-muted-foreground truncate">
-                            {format(new Date(doc.created_at), "dd 'de' MMM, HH:mm", {
-                              locale: ptBR,
-                            })}
+                            {doc.data_upload &&
+                              format(new Date(doc.data_upload), "dd 'de' MMM, HH:mm", {
+                                locale: ptBR,
+                              })}
                           </span>
                         </div>
                       </div>

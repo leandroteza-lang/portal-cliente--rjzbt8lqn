@@ -14,8 +14,9 @@ export async function fetchDocuments(
   pageSize: number,
   search: string,
   category: string,
+  userId: string,
 ) {
-  let query = supabase.from('documentos').select('*', { count: 'exact' })
+  let query = supabase.from('documentos').select('*', { count: 'exact' }).eq('cliente_id', userId)
 
   if (search) {
     query = query.ilike('nome', `%${search}%`)

@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { Search, Filter, Eye, Download, CheckCircle, Trash2, FileText } from 'lucide-react'
+import {
+  Search,
+  Filter,
+  Eye,
+  Download,
+  CheckCircle,
+  Trash2,
+  FileText,
+  Plus,
+  UploadCloud,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   Table,
@@ -14,6 +24,14 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -22,6 +40,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+
+const CATEGORIES = [
+  { value: 'Impostos', label: 'Impostos' },
+  { value: 'Contábeis', label: 'Contábeis' },
+  { value: 'Legais', label: 'Legais' },
+  { value: 'Folha de Pagamento', label: 'Folha de Pagamento' },
+  { value: 'Operacionais', label: 'Operacionais' },
+]
 
 type Documento = {
   id: string
@@ -40,6 +66,13 @@ export default function AdminDocumentos() {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [viewDoc, setViewDoc] = useState<Documento | null>(null)
+
+  const [isUploadOpen, setIsUploadOpen] = useState(false)
+  const [uploadClient, setUploadClient] = useState('')
+  const [uploadCategory, setUploadCategory] = useState('')
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [clientes, setClientes] = useState<{ id: string; nome: string }[]>([])
+  const [isUploading, setIsUploading] = useState(false)
 
   const [cats, setCats] = useState<Record<string, boolean>>({
     Impostos: true,
@@ -71,9 +104,46 @@ export default function AdminDocumentos() {
     setTotal(count || 0)
   }
 
+  const loadClientes = async () => {
+    const { data } = await supabase.from('clientes').select('id, nome').order('nome')
+    setClientes(data || [])
+  }
+
   useEffect(() => {
     loadDocs()
+    loadClientes()
   }, [search, cats, status, page])
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!uploadClient || !uploadCategory || !uploadFile) {
+      return toast.error('Preencha todos os campos obrigatórios.')
+    }
+
+    setIsUploading(true)
+    try {
+      const { error } = await supabase.from('documentos').insert({
+        cliente_id: uploadClient,
+        nome: uploadFile.name,
+        categoria: uploadCategory,
+        status: 'Concluído',
+        arquivo_url: null, // Mocking URL real storage integration
+      })
+
+      if (error) throw error
+
+      toast.success('Documento enviado com sucesso!')
+      setIsUploadOpen(false)
+      setUploadClient('')
+      setUploadCategory('')
+      setUploadFile(null)
+      loadDocs()
+    } catch (err: any) {
+      toast.error('Erro ao enviar documento: ' + err.message)
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   const handleProcess = async (id: string) => {
     await supabase.from('documentos').update({ status: 'Concluído' }).eq('id', id)
@@ -100,8 +170,12 @@ export default function AdminDocumentos() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-slate-800">Gestão de Documentos</h1>
+        <Button onClick={() => setIsUploadOpen(true)} className="gap-2">
+          <Plus className="w-4 h-4" />
+          Novo Envio
+        </Button>
       </div>
 
       <Card>
@@ -291,6 +365,75 @@ export default function AdminDocumentos() {
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enviar Documento para Cliente</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUploadSubmit} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Cliente *</Label>
+              <Select value={uploadClient} onValueChange={setUploadClient} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientes.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Categoria *</Label>
+              <Select value={uploadCategory} onValueChange={setUploadCategory} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Arquivo *</Label>
+              <div className="relative border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center hover:bg-slate-50 transition-colors">
+                <input
+                  type="file"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                  required
+                />
+                <UploadCloud className="w-8 h-8 text-slate-400 mb-2" />
+                <span className="text-sm font-medium text-slate-700 text-center">
+                  {uploadFile ? uploadFile.name : 'Clique ou arraste o arquivo aqui'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsUploadOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isUploading || !uploadFile || !uploadClient || !uploadCategory}
+              >
+                {isUploading ? 'Enviando...' : 'Enviar Documento'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
